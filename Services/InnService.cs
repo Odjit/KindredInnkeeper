@@ -8,6 +8,7 @@ using KindredInnkeeper.Data;
 using ProjectM;
 using ProjectM.CastleBuilding;
 using ProjectM.Network;
+using Stunlock.Core;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -479,6 +480,14 @@ internal class InnService
 						if (parentEntity.Has<NameableInteractable>())
 						{
 							var nameable = parentEntity.Read<NameableInteractable>();
+
+							if (nameable.Name.IsEmpty)
+							{
+								var prefabGuid = parentEntity.Read<PrefabGUID>();
+								var prefabName = Core.Localization.GetPrefabName(prefabGuid);
+								nameable.Name = prefabName;
+							}
+
 							if (!nameable.Name.ToString().Contains("''"))
 							{
 								if (nameable.Name.Length < 61)

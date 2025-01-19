@@ -43,7 +43,7 @@ internal class LocalizationService
 
     void LoadLocalization()
     {
-        var resourceName = "KindredCommands.Data.English.json";
+        var resourceName = "KindredInnkeeper.Data.English.json";
 
         var assembly = Assembly.GetExecutingAssembly();
         var stream = assembly.GetManifestResourceStream(resourceName);
@@ -64,7 +64,7 @@ internal class LocalizationService
 
     void LoadPrefabNames()
     {
-        var resourceName = "KindredCommands.Data.PrefabNames.json";
+        var resourceName = "KindredInnkeeper.Data.PrefabNames.json";
 
         var assembly = Assembly.GetExecutingAssembly();
         var stream = assembly.GetManifestResourceStream(resourceName);
