@@ -1,9 +1,10 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using ProjectM;
 using ProjectM.CastleBuilding;
 using ProjectM.Gameplay.Systems;
 using ProjectM.Network;
 using Unity.Collections;
+using Unity.Content;
 using Unity.Entities;
 
 namespace KindredInnkeeper.Patches;
@@ -15,8 +16,13 @@ public static class PreventDoorOpenPatch
     {
         var entities = __instance.__query_1834203323_0.ToEntityArray(Allocator.Temp);
         foreach (var entity in entities)
-        {
-            var spellTarget = entity.Read<SpellTarget>();
+		{
+			var doorOpener = entity.Read<EntityOwner>().Owner;
+			var doorUser = doorOpener.Read<PlayerCharacter>().UserEntity;
+			var clanRole = doorUser.Read<ClanRole>().Value;
+			if (clanRole == ClanRoleEnum.Leader) continue;
+
+			var spellTarget = entity.Read<SpellTarget>();
             var door = spellTarget.Target.GetEntityOnServer();
 
             var parentBuffer = Core.EntityManager.GetBuffer<CastleBuildingAttachToParentsBuffer>(door);
@@ -26,7 +32,6 @@ public static class PreventDoorOpenPatch
             if (!entrance.Has<CastleRoomWall>()) continue;
             if (GetRoomOwnerFromWall(entrance.Read<CastleRoomWall>(), out var roomOwner, out var room))
             {
-                var doorOpener = entity.Read<EntityOwner>().Owner;
                 Core.InnService.GetRoomIn(entity.Read<EntityOwner>().Owner, out var playerInRoom);
                 if (!doorOpener.Equals(roomOwner) && !roomOwner.Equals(Entity.Null) && !room.Equals(playerInRoom))
                 {
@@ -82,8 +87,12 @@ public static class PreventInventoryMovements
     {
         var entities = __instance._MoveItemBetweenInventoriesEventQuery.ToEntityArray(Allocator.Temp);
         foreach(var entity in entities)
-        {
-            var moveItemBetweenInventoriesEvent = entity.Read<MoveItemBetweenInventoriesEvent>();
+		{
+			var fromUser = entity.Read<FromCharacter>().User;
+			var clanRole = fromUser.Read<ClanRole>().Value;
+			if (clanRole == ClanRoleEnum.Leader) continue;
+
+			var moveItemBetweenInventoriesEvent = entity.Read<MoveItemBetweenInventoriesEvent>();
             var fromCharacter = entity.Read<FromCharacter>().Character;
             if (Core.InnService.GetRoomOwnerForNetworkId(moveItemBetweenInventoriesEvent.FromInventory, out var roomOwner) &&
                 !roomOwner.Equals(fromCharacter) ||
@@ -104,8 +113,12 @@ public static class PreventInventoryMovementsAll
     {
         var entities = __instance.__query_133601413_0.ToEntityArray(Allocator.Temp);
         foreach (var entity in entities)
-        {
-            var moveAllItemsBetweenInventoriesEvent = entity.Read<MoveAllItemsBetweenInventoriesEvent>();
+		{
+			var fromUser = entity.Read<FromCharacter>().User;
+			var clanRole = fromUser.Read<ClanRole>().Value;
+			if (clanRole == ClanRoleEnum.Leader) continue;
+
+			var moveAllItemsBetweenInventoriesEvent = entity.Read<MoveAllItemsBetweenInventoriesEvent>();
             var fromCharacter = entity.Read<FromCharacter>().Character;
             if (Core.InnService.GetRoomOwnerForNetworkId(moveAllItemsBetweenInventoriesEvent.FromInventory, out var roomOwner) &&
                                !roomOwner.Equals(fromCharacter) ||
@@ -126,8 +139,12 @@ public static class PreventSmartMerge
     {
         var entities = __instance.__query_133601510_0.ToEntityArray(Allocator.Temp);
         foreach (var entity in entities)
-        {
-            var smartMergeItemsBetweenInventoriesEvent = entity.Read<SmartMergeItemsBetweenInventoriesEvent>();
+		{
+			var fromUser = entity.Read<FromCharacter>().User;
+			var clanRole = fromUser.Read<ClanRole>().Value;
+			if (clanRole == ClanRoleEnum.Leader) continue;
+
+			var smartMergeItemsBetweenInventoriesEvent = entity.Read<SmartMergeItemsBetweenInventoriesEvent>();
             var fromCharacter = entity.Read<FromCharacter>().Character;
             if (Core.InnService.GetRoomOwnerForNetworkId(smartMergeItemsBetweenInventoriesEvent.FromInventory, out var roomOwner) &&
                                !roomOwner.Equals(fromCharacter) ||
@@ -149,7 +166,11 @@ public static class PreventSortAll
         var entities = __instance.__query_133601617_0.ToEntityArray(Allocator.Temp);
         foreach (var entity in entities)
         {
-            var smartMergeItemsBetweenInventoriesEvent = entity.Read<SortAllInventoriesEvent>();
+			var fromUser = entity.Read<FromCharacter>().User;
+			var clanRole = fromUser.Read<ClanRole>().Value;
+			if (clanRole == ClanRoleEnum.Leader) continue;
+
+			var smartMergeItemsBetweenInventoriesEvent = entity.Read<SortAllInventoriesEvent>();
             var fromCharacter = entity.Read<FromCharacter>().Character;
             if (Core.InnService.GetRoomOwnerForNetworkId(smartMergeItemsBetweenInventoriesEvent.Inventory, out var roomOwner) &&
                                !roomOwner.Equals(fromCharacter))
@@ -168,8 +189,12 @@ public static class PreventSortSingle
     {
         var entities = __instance.__query_133601574_0.ToEntityArray(Allocator.Temp);
         foreach (var entity in entities)
-        {
-            var sortSingleInventoryEvent = entity.Read<SortSingleInventoryEvent>();
+		{
+			var fromUser = entity.Read<FromCharacter>().User;
+			var clanRole = fromUser.Read<ClanRole>().Value;
+			if (clanRole == ClanRoleEnum.Leader) continue;
+
+			var sortSingleInventoryEvent = entity.Read<SortSingleInventoryEvent>();
             var fromCharacter = entity.Read<FromCharacter>().Character;
             if (Core.InnService.GetRoomOwnerForNetworkId(sortSingleInventoryEvent.Inventory, out var roomOwner) &&
                                !roomOwner.Equals(fromCharacter))
@@ -188,8 +213,12 @@ public static class PreventSplit
     {
         var entities = __instance._Query.ToEntityArray(Allocator.Temp);
         foreach (var entity in entities)
-        {
-            var splitItemEvent = entity.Read<SplitItemEvent>();
+		{
+			var fromUser = entity.Read<FromCharacter>().User;
+			var clanRole = fromUser.Read<ClanRole>().Value;
+			if (clanRole == ClanRoleEnum.Leader) continue;
+
+			var splitItemEvent = entity.Read<SplitItemEvent>();
             var fromCharacter = entity.Read<FromCharacter>().Character;
             if (Core.InnService.GetRoomOwnerForNetworkId(splitItemEvent.Inventory, out var roomOwner) &&
                                !roomOwner.Equals(fromCharacter))
@@ -220,6 +249,27 @@ public static class PreventCoffinBinding
             }
         }
     }
+}
+
+[HarmonyPatch(typeof(NameableInteractableSystem), nameof(NameableInteractableSystem.OnUpdate))]
+public static class PreventRenames
+{
+	public static void Prefix(NameableInteractableSystem __instance)
+	{
+		var entities = __instance._RenameQuery.ToEntityArray(Allocator.Temp);
+		foreach (var entity in entities)
+		{
+			var fromCharacter = entity.Read<FromCharacter>().User;
+			var clanRole = fromCharacter.Read<ClanRole>().Value;
+			if (clanRole == ClanRoleEnum.Leader) continue;
+
+			var renameInteractable = entity.Read<InteractEvents_Client.RenameInteractable>();
+			if (Core.InnService.GetRoomOwnerForNetworkId(renameInteractable.InteractableId, out var _))
+			{
+				Core.EntityManager.DestroyEntity(entity);
+			}
+		}
+	}
 }
 
 

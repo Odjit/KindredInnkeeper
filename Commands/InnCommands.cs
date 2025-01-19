@@ -4,6 +4,8 @@ using ProjectM;
 using ProjectM.CastleBuilding;
 using ProjectM.Network;
 using Stunlock.Core;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Unity.Entities;
 using VampireCommandFramework;
@@ -13,7 +15,6 @@ namespace KindredInnkeeper.Commands;
 
 [CommandGroup("inn")]
 internal class InnCommands
-
 {
     [Command("enter", "join", description: "Adds self to a clan of the name Inn that has a leader by the name of InnKeeper", adminOnly: false)]
     public static void AddToClan(ChatCommandContext ctx)
@@ -26,6 +27,7 @@ internal class InnCommands
             ctx.Reply($"You are in an existing clan of '{clanTeam.Name}'");
             return;
         }
+
         //if the user already owns a territory, they cannot join the clan
         foreach (var castleTerritoryEntity in Helper.GetEntitiesByComponentType<CastleTerritory>())
         {
@@ -47,8 +49,10 @@ internal class InnCommands
             return;
         }
 
-        TeamUtility.AddUserToClan(Core.EntityManager, clanEntity, userToAddEntity, ref user);
-        userToAddEntity.Write<User>(user);
+		userToAddEntity.Write(new ClanRole() { Value = ClanRoleEnum.Member });
+
+		TeamUtility.AddUserToClan(Core.EntityManager, clanEntity, userToAddEntity, ref user);
+        userToAddEntity.Write(user);
 
         var members = Core.EntityManager.GetBuffer<ClanMemberStatus>(clanEntity);
         var userBuffer = Core.EntityManager.GetBuffer<SyncToUserBuffer>(clanEntity);
@@ -57,8 +61,7 @@ internal class InnCommands
         {
             var member = members[i];
             var userBufferEntry = userBuffer[i];
-            var userToTest = userBufferEntry.UserEntity.Read<User>();
-            if (userToTest.CharacterName.Equals(user.CharacterName))
+            if (userBufferEntry.UserEntity.Equals(userToAddEntity))
             {
                 member.ClanRole = ClanRoleEnum.Member;
                 members[i] = member;
@@ -68,49 +71,26 @@ internal class InnCommands
         ctx.Reply($"<color=white>You have joined the Inn.</color>");
     }
 
-
-
     [Command("rules", description: "Displays the rules of the Inn", adminOnly: false)]
     public static void DisplayRules(ChatCommandContext ctx)
     {
         var rules = new StringBuilder();
-        rules.AppendLine("<color=yellow>Welcome to the</color> <color=lightblue>Inn</color><color=yellow>!</color> ");
-        rules.AppendLine("<color=green>1.</color> This is temporary stay. Please find other accomodations after 1 week.");
-        rules.AppendLine("<color=green>2.</color> No stealing from other players. Stay out of other's rooms.");
-        rules.AppendLine("<color=green>3.</color> Claim a room by renaming the chest outside it.");
-        rules.AppendLine("<color=green>4.</color> Leave the clan once you find a plot.");
-        rules.AppendLine("<color=green>5.</color> Rename the chest back to 'RenameToClaim' when leaving.");
-        ctx.Reply(rules.ToString());
+        rules.AppendLine("<color=yellow>Welcome to the Inn!</color>");
+        rules.AppendLine("<color=green>1.</color> This is temporary stay. Please find other accomodations asap.");
+        rules.AppendLine("<color=green>2.</color> Doors report their guest. Use '.inn vacancy' to see availablility.");
+        rules.AppendLine("<color=green>3.</color> Claim a room: Type '.inn claimroom' in chat while in the room.");
+        rules.AppendLine("<color=green>4.</color> Claiming a plot kicks you from the Inn. Your storage will follow.");
+        rules.AppendLine("<color=green>5.</color> Leaving the clan will forfeit any items left in your room.");
+		ctx.Reply(rules.ToString());
     }
 
     [Command("guests", description: "Displays the guests of the Inn", adminOnly: true)]
     public static void DisplayGuests(ChatCommandContext ctx)
     {
-        var clanEntity = Core.InnService.GetInnClan();
-        if (clanEntity == Entity.Null)
-        {
-            ctx.Reply("No clan found matching name 'Inn' with a leader of 'InnKeeper'");
-            return;
-        }
+		var roomOwners = Core.InnService.GetRoomOwners();
+        ctx.Reply("Inn Guests: " + string.Join(", ", roomOwners.Select(x => x.Read<PlayerCharacter>().Name)));
 
-        var members = Core.EntityManager.GetBuffer<ClanMemberStatus>(clanEntity);
-        var userBuffer = Core.EntityManager.GetBuffer<SyncToUserBuffer>(clanEntity);
-
-        var guests = new StringBuilder();
-        for (var i = 0; i < members.Length; ++i)
-        {
-            var member = members[i];
-            var userBufferEntry = userBuffer[i];
-            var user = userBufferEntry.UserEntity.Read<User>();
-            if (member.ClanRole == ClanRoleEnum.Member)
-            {
-                var guestName = user.CharacterName;
-                guests.AppendLine($"<color=white>{guestName}</color>");
-            }
-        }
-
-        ctx.Reply(guests.ToString());
-    }
+	}
     
     [Command("quests", description: "Complete beginning shelter quests", adminOnly: false)]
     public static void Quests(ChatCommandContext ctx)
@@ -134,31 +114,15 @@ internal class InnCommands
         ctx.Reply("Completed initial shelter journal quests.");
     }
 
-    [Command("addroom", description: "Adds a room to the Inn", adminOnly: true)]
-    public static void AddRoom(ChatCommandContext ctx)
-    {
-        var result = Core.InnService.AddRoomToInn(ctx.Event.SenderCharacterEntity);
-        if (result != "")
-        {
-            ctx.Reply("Failed to add a room to the Inn: "+result);
-            return;
-        }
-        ctx.Reply("Added a room to the Inn.");
-    }
-
-
-    [Command("listrooms", description: "Lists the rooms in the Inn", adminOnly: true)]
-    public static void ListRooms(ChatCommandContext ctx)
-    {
-        var roomOwners = Core.InnService.GetRoomOwners();
-
-        ctx.Reply($"{Core.InnService.GetFreeRoomCount()} free rooms out of {Core.InnService.GetRoomCount()} rooms in the inn.\n" +
-            string.Join(", ", roomOwners) + " have rooms in the inn.");
-    }
-
-    [Command("claimroom")]
+    [Command("claimroom", description:"Use this while standing in a vacant room in an inn")]
     public static void ClaimRoom(ChatCommandContext ctx)
     {
+		if (Core.InnService.HasClaimedARoom(ctx.Event.SenderCharacterEntity))
+		{
+			ctx.Reply("You have already claimed a room. Leave your current room before claiming another one.");
+			return;
+		}
+
         if (Core.InnService.GetRoomIn(ctx.Event.SenderCharacterEntity, out var roomIn))
         {
             switch (Core.InnService.SetRoomOwnerIfEmpty(roomIn, ctx.Event.SenderCharacterEntity))
@@ -178,7 +142,76 @@ internal class InnCommands
         ctx.Reply("You are not standing in a room.");
     }
 
-    [Command("setroomowner", "sro", adminOnly: true)]
+
+	readonly static Dictionary<Entity, double> leaveRoomTimer = [];
+	[Command("leaveroom")]
+	public static void LeaveRoom(ChatCommandContext ctx)
+	{
+		// Warn them the first time they execute this command
+		if (!leaveRoomTimer.TryGetValue(ctx.Event.SenderCharacterEntity, out var lastTime) || lastTime + 60 < Core.ServerTime)
+		{
+			ctx.Reply("Warning you will lose all items within your claimed room. Run this command again to leave your room");
+			if (leaveRoomTimer.ContainsKey(ctx.Event.SenderCharacterEntity))
+				leaveRoomTimer[ctx.Event.SenderCharacterEntity] = Core.ServerTime;
+			else
+				leaveRoomTimer.Add(ctx.Event.SenderCharacterEntity, Core.ServerTime);
+			return;
+		}
+		else
+		{
+			if (Core.InnService.LeaveRoom(ctx.Event.SenderCharacterEntity))
+			{
+				ctx.Reply("You have checked out of your room.");
+			}
+			else
+			{
+				ctx.Reply("You haven't claimed a room yet.");
+			}
+		}
+	}
+
+	[Command("addroom", description: "Adds a room to the Inn", adminOnly: true)]
+	public static void AddRoom(ChatCommandContext ctx)
+	{
+		var result = Core.InnService.AddRoomToInn(ctx.Event.SenderCharacterEntity);
+		if (result != "")
+		{
+			ctx.Reply("Failed to add a room to the Inn: " + result);
+			return;
+		}
+		ctx.Reply("Added a room to the Inn.");
+	}
+
+	[Command("removeroom", description: "Removes a room from the Inn", adminOnly: true)]
+	public static void RemoveRoom(ChatCommandContext ctx)
+	{
+		if (Core.InnService.RemoveRoomFromInn(ctx.Event.SenderCharacterEntity))
+		{
+			ctx.Reply("Removed a room from the Inn.");
+			return;
+		}
+		ctx.Reply("Not in a room of the Inn.");
+	}
+
+
+	[Command("vacancy", description: "Reports occupancy amounts in the Inn", adminOnly: false)]
+    public static void ListRooms(ChatCommandContext ctx)
+    {
+        var roomOwners = Core.InnService.GetRoomOwners();
+        int freeRoomCount = Core.InnService.GetFreeRoomCount();
+        int totalRoomCount = Core.InnService.GetRoomCount();
+
+        string roomPlural = freeRoomCount == 1 ? "" : "s";
+        ctx.Reply($"{freeRoomCount} free room{roomPlural} out of {totalRoomCount} room{(totalRoomCount == 1 ? "" : "s")} in the inn.\n");
+
+        if (freeRoomCount == 0)
+        {
+            ctx.Reply("There is no room available in the inn.");
+            return;
+        }
+    }
+
+	[Command("setroomowner", "sro", adminOnly: true)]
     public static void SetRoomOwner(ChatCommandContext ctx, FoundPlayer player)
     {
         if (Core.InnService.GetRoomIn(ctx.Event.SenderCharacterEntity, out var roomIn))
@@ -197,20 +230,20 @@ internal class InnCommands
     }
 
     [Command("roomowner", "ro", adminOnly: true)]
-
     public static void GetRoomOwner(ChatCommandContext ctx)
     {
-        if (Core.InnService.GetRoomIn(ctx.Event.SenderCharacterEntity, out var roomIn))
-        {
-            var owner = Core.InnService.GetRoomOwnerFromRoomIn(roomIn, out var roomOwner);
-            if (owner)
-            {
-                ctx.Reply($"The owner of this room is <color=white>{roomOwner.Read<PlayerCharacter>().Name}</white>.");
-            }
-            else
-            {
-                ctx.Reply("This room is not claimed.");
-            }
-        }
-    }
+		if (Core.InnService.GetRoomOwnerFromRoomIn(ctx.Event.SenderCharacterEntity, out var roomOwner))
+		{
+			if (roomOwner == Entity.Null)
+			{
+				ctx.Reply("This room is not claimed.");
+				return;
+			}
+			ctx.Reply($"The owner of this room is <color=white>{roomOwner.Read<PlayerCharacter>().Name}</color>.");
+		}
+		else
+		{
+			ctx.Reply("This isn't a room within the Inn.");
+		}
+	}
 }

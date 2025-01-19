@@ -36,7 +36,7 @@ internal static class Core
 	public static LocalizationService Localization { get; } = new();
 	public static PlayerService Players { get; internal set; }
 	public static InnService InnService { get; internal set; }
-    public static object PrefabCollection { get; internal set; }
+    public static PrefabCollectionSystem PrefabCollection { get; internal set; }
 
     static MonoBehaviour monoBehaviour;
 

@@ -67,7 +67,6 @@ internal class Buffs
 					if (buffEntity.Has<LifeTime>())
 					{
 						var lifetime = buffEntity.Read<LifeTime>();
-						lifetime.Duration = -1;
 						lifetime.EndAction = LifeTimeEndAction.None;
 						buffEntity.Write(lifetime);
 					}

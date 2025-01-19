@@ -1,4 +1,4 @@
-﻿using ProjectM;
+using ProjectM;
 using ProjectM.Network;
 using System.Collections.Generic;
 using Unity.Collections;
@@ -9,7 +9,7 @@ namespace KindredInnkeeper.Patches;
 [HarmonyLib.HarmonyPatch(typeof(PlaceTileModelSystem), nameof(PlaceTileModelSystem.OnUpdate))]
 static class PlaceTileModelSystemPatch
 {
-    static Dictionary<Entity, double> lastBuildCastleHeart = [];
+    readonly static Dictionary<Entity, double> lastBuildCastleHeart = [];
 
     static void Prefix(PlaceTileModelSystem __instance)
     {
@@ -23,10 +23,15 @@ static class PlaceTileModelSystemPatch
         foreach (var buildEvent in buildEvents)
         {
             var fromCharacter = buildEvent.Read<FromCharacter>();
+
             var playerTeamValue = fromCharacter.User.Read<Team>().Value;
             if (playerTeamValue != clanTeamValue) continue;
 
-            var btme = buildEvent.Read<BuildTileModelEvent>();
+
+			var clanRole = fromCharacter.User.Read<ClanRole>();
+			if (clanRole.Value == ClanRoleEnum.Leader) continue;
+
+			var btme = buildEvent.Read<BuildTileModelEvent>();
             if (btme.PrefabGuid == Data.Prefabs.TM_BloodFountain_CastleHeart)
             {
                 if(!lastBuildCastleHeart.TryGetValue(fromCharacter.Character, out var lastBuildTime) || 
