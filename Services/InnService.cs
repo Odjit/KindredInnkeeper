@@ -231,6 +231,16 @@ internal class InnService
 					var researchPoint = attachmentEntity.Read<RespawnPoint>();
 					researchPoint.HasRespawnPointOwner = false;
 					researchPoint.RespawnPointOwner = Entity.Null;
+					attachmentEntity.Write(researchPoint);
+				}
+
+				if (attachmentEntity.Has<Residency>())
+				{
+					var residency = attachmentEntity.Read<Residency>();
+					if (!residency.Resident.Equals(Entity.Null))
+					{
+						Buffs.RemoveBuff(residency.Resident, residency.InsideBuff);
+					}
 				}
 			}
 		}
