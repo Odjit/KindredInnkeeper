@@ -20,10 +20,10 @@ internal class Buffs
 			User = User,
 			Character = Character
 		};
-		if (!BuffUtility.TryGetBuff(Core.Server.EntityManager, Character, buffPrefab, out Entity buffEntity))
+		if (!BuffUtility.TryGetBuff(Core.Server.EntityManager, Character, buffPrefab, out var _))
 		{
 			des.ApplyBuff(fromCharacter, buffEvent);
-			if (BuffUtility.TryGetBuff(Core.Server.EntityManager, Character, buffPrefab, out buffEntity))
+			if (BuffUtility.TryGetBuff(Core.Server.EntityManager, Character, buffPrefab, out var buffEntity))
 			{
 				if (buffEntity.Has<CreateGameplayEventsOnSpawn>())
 				{

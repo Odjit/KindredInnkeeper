@@ -125,7 +125,8 @@ internal class InnCommands
 
         if (Core.InnService.GetRoomIn(ctx.Event.SenderCharacterEntity, out var roomIn))
         {
-            switch (Core.InnService.SetRoomOwnerIfEmpty(roomIn, ctx.Event.SenderCharacterEntity))
+			Core.InnService.ClearRoom(roomIn);
+			switch (Core.InnService.SetRoomOwnerIfEmpty(roomIn, ctx.Event.SenderCharacterEntity))
             {
                 case InnService.RoomSetFailure.None:
                     ctx.Reply("You have claimed this room.");
@@ -197,7 +198,6 @@ internal class InnCommands
 	[Command("vacancy", description: "Reports occupancy amounts in the Inn", adminOnly: false)]
     public static void ListRooms(ChatCommandContext ctx)
     {
-        var roomOwners = Core.InnService.GetRoomOwners();
         int freeRoomCount = Core.InnService.GetFreeRoomCount();
         int totalRoomCount = Core.InnService.GetRoomCount();
 
@@ -246,4 +246,5 @@ internal class InnCommands
 			ctx.Reply("This isn't a room within the Inn.");
 		}
 	}
+
 }

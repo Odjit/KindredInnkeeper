@@ -93,6 +93,7 @@ public static class PreventInventoryMovements
 			if (clanRole == ClanRoleEnum.Leader) continue;
 
 			var moveItemBetweenInventoriesEvent = entity.Read<MoveItemBetweenInventoriesEvent>();
+
             var fromCharacter = entity.Read<FromCharacter>().Character;
             if (Core.InnService.GetRoomOwnerForNetworkId(moveItemBetweenInventoriesEvent.FromInventory, out var roomOwner) &&
                 !roomOwner.Equals(fromCharacter) ||
@@ -130,6 +131,32 @@ public static class PreventInventoryMovementsAll
             }
         }
     }
+}
+
+[HarmonyPatch(typeof(MoveAllItemsBetweenInventoriesV2System), nameof(MoveAllItemsBetweenInventoriesV2System.OnUpdate))]
+public static class PreventInventoryMovementsAllV2
+{
+	public static void Prefix(MoveAllItemsBetweenInventoriesV2System __instance)
+	{
+		var entities = __instance._EventQuery.ToEntityArray(Allocator.Temp);
+		foreach (var entity in entities)
+		{
+			var fromUser = entity.Read<FromCharacter>().User;
+			var clanRole = fromUser.Read<ClanRole>().Value;
+			if (clanRole == ClanRoleEnum.Leader) continue;
+
+			var moveAllItemsBetweenInventoriesEvent = entity.Read<MoveAllItemsBetweenInventoriesEventV2>();
+			var fromCharacter = entity.Read<FromCharacter>().Character;
+			if (Core.InnService.GetRoomOwnerForNetworkId(moveAllItemsBetweenInventoriesEvent.FromInventory, out var roomOwner) &&
+							   !roomOwner.Equals(fromCharacter) ||
+											  Core.InnService.GetRoomOwnerForNetworkId(moveAllItemsBetweenInventoriesEvent.ToInventory, out roomOwner) &&
+															 !roomOwner.Equals(fromCharacter))
+			{
+				Core.EntityManager.DestroyEntity(entity);
+				continue;
+			}
+		}
+	}
 }
 
 [HarmonyPatch(typeof(SmartMergeItemsBetweenInventoriesSystem), nameof(SmartMergeItemsBetweenInventoriesSystem.OnUpdate))]
@@ -228,6 +255,30 @@ public static class PreventSplit
             }
         }
     }
+}
+
+[HarmonyPatch(typeof(DropInventoryItemSystem), nameof(DropInventoryItemSystem.OnUpdate))]
+public static class PreventDropInventoryItem
+{
+	public static void Prefix(DropInventoryItemSystem __instance)
+	{
+		var entities = __instance._Query.ToEntityArray(Allocator.Temp);
+		foreach (var entity in entities)
+		{
+			var fromUser = entity.Read<FromCharacter>().User;
+			var clanRole = fromUser.Read<ClanRole>().Value;
+			if (clanRole == ClanRoleEnum.Leader) continue;
+
+			var dropInventoryItemEvent = entity.Read<DropInventoryItemEvent>();
+			var fromCharacter = entity.Read<FromCharacter>().Character;
+			if (Core.InnService.GetRoomOwnerForNetworkId(dropInventoryItemEvent.Inventory, out var roomOwner) &&
+							   !roomOwner.Equals(fromCharacter))
+			{
+				Core.EntityManager.DestroyEntity(entity);
+				continue;
+			}
+		}
+	}
 }
 
 [HarmonyPatch(typeof(BindCoffinSystem), nameof(BindCoffinSystem.OnUpdate))]

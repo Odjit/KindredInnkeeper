@@ -27,7 +27,6 @@ static class PlaceTileModelSystemPatch
             var playerTeamValue = fromCharacter.User.Read<Team>().Value;
             if (playerTeamValue != clanTeamValue) continue;
 
-
 			var clanRole = fromCharacter.User.Read<ClanRole>();
 			if (clanRole.Value == ClanRoleEnum.Leader) continue;
 
@@ -117,5 +116,33 @@ static class PlaceTileModelSystemPatch
             }
         }
         buildEvents.Dispose();
-    }
+
+		var wallpaperEvents = __instance._BuildWallpaperQuery.ToEntityArray(Allocator.Temp);
+		foreach (var wallpaperEvent in wallpaperEvents)
+		{
+			var fromCharacter = wallpaperEvent.Read<FromCharacter>();
+
+			var playerTeamValue = fromCharacter.User.Read<Team>().Value;
+			if (playerTeamValue != clanTeamValue) continue;
+
+			var clanRole = fromCharacter.User.Read<ClanRole>();
+			if (clanRole.Value == ClanRoleEnum.Leader) continue;
+			
+			Core.EntityManager.DestroyEntity(wallpaperEvent);
+		}
+
+		var tileModelVariationEvents = __instance._SetVariationQuery.ToEntityArray(Allocator.Temp);
+		foreach (var tileModelVariationEvent in tileModelVariationEvents)
+		{
+			var fromCharacter = tileModelVariationEvent.Read<FromCharacter>();
+
+			var playerTeamValue = fromCharacter.User.Read<Team>().Value;
+			if (playerTeamValue != clanTeamValue) continue;
+
+			var clanRole = fromCharacter.User.Read<ClanRole>();
+			if (clanRole.Value == ClanRoleEnum.Leader) continue;
+
+			Core.EntityManager.DestroyEntity(tileModelVariationEvent);
+		}
+	}
 }

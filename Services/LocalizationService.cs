@@ -49,13 +49,11 @@ internal class LocalizationService
         var stream = assembly.GetManifestResourceStream(resourceName);
         if (stream != null)
         {
-            using (var reader = new StreamReader(stream))
-            {
-                string jsonContent = reader.ReadToEnd();
-                var localizationFile = JsonSerializer.Deserialize<LocalizationFile>(jsonContent);
-                localization = localizationFile.Nodes.ToDictionary(x => x.Guid, x => x.Text);
-            }
-        }
+			using var reader = new StreamReader(stream);
+			string jsonContent = reader.ReadToEnd();
+			var localizationFile = JsonSerializer.Deserialize<LocalizationFile>(jsonContent);
+			localization = localizationFile.Nodes.ToDictionary(x => x.Guid, x => x.Text);
+		}
         else
         {
             Console.WriteLine("Resource not found!");
@@ -70,12 +68,10 @@ internal class LocalizationService
         var stream = assembly.GetManifestResourceStream(resourceName);
         if (stream != null)
         {
-            using (var reader = new StreamReader(stream))
-            {
-                string jsonContent = reader.ReadToEnd();
-                prefabNames = JsonSerializer.Deserialize<Dictionary<int, string>>(jsonContent);
-            }
-        }
+			using var reader = new StreamReader(stream);
+			string jsonContent = reader.ReadToEnd();
+			prefabNames = JsonSerializer.Deserialize<Dictionary<int, string>>(jsonContent);
+		}
         else
         {
             Console.WriteLine("Resource not found!");

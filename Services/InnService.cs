@@ -73,8 +73,13 @@ internal class InnService
             saving.Add(roomNetworkId.ToString(), ownerNetworkId.ToString());
         }
 
+		// Create path if it doesn't exist
+		if (!Directory.Exists(CONFIG_PATH))
+		{
+			Directory.CreateDirectory(CONFIG_PATH);
+		}
 
-        var options = new JsonSerializerOptions
+		var options = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             WriteIndented = true
@@ -182,7 +187,12 @@ internal class InnService
         return Entity.Null;
     }
 
-	IEnumerator HandlePlayerLeavingRoom(Entity charEntity, Entity roomEntity)
+	public void ClearRoom(Entity roomEntity)
+	{
+		Core.StartCoroutine(ClearRoom(roomEntity, roomOwners[roomEntity]));
+	}
+
+	IEnumerator ClearRoom(Entity roomEntity, Entity roomOwner = default)
 	{
 		List<Entity> inventoryEntities = [];
 
@@ -248,65 +258,68 @@ internal class InnService
 
 		if (inventoryEntities.Count > 0)
 		{
-			var userEntity = charEntity.Read<PlayerCharacter>().UserEntity;
-			// Check if they have a castle heart in which case spawn travel bags for them with their inventory
-			var castleHearts = castleHeartQuery.ToEntityArray(Allocator.Temp);
 			var foundHeart = false;
-			foreach (var castleHeartEntity in castleHearts)
+			if (!roomOwner.Equals(Entity.Null))
 			{
-				var userOwner = castleHeartEntity.Read<UserOwner>();
-				if (!userOwner.Owner.GetEntityOnServer().Equals(userEntity)) continue;
-
-				// Spawn travel bags
-				var prefabCollection = Core.Server.GetExistingSystemManaged<PrefabCollectionSystem>();
-				prefabCollection._PrefabLookupMap.TryGetValue(Prefabs.TM_Stash_Chest_Rebuilding, out var travelBagsPrefab);
-				var travelBagsEntity = Core.EntityManager.Instantiate(travelBagsPrefab);
-
-				var offset = new float3(1.5f, 0f, 3.25f);
-				// Should figure out a better location for the tile position but for now it is hardcoded
-				var tilePosition = castleHeartEntity.Read<TilePosition>();
-				tilePosition.Tile += new int2(2, 2);
-				travelBagsEntity.Write(tilePosition);
-
-				var translation = castleHeartEntity.Read<Translation>();
-				translation.Value += offset;
-				travelBagsEntity.Write(translation);
-
-				var localTransform = castleHeartEntity.Read<LocalTransform>();
-				localTransform.Position += offset;
-				travelBagsEntity.Write(localTransform);
-
-				var rotation = castleHeartEntity.Read<Rotation>();
-				travelBagsEntity.Write(rotation);
-
-				travelBagsEntity.Write(userOwner);
-				travelBagsEntity.Write(new CastleHeartConnection() { CastleHeartEntity = castleHeartEntity });
-				travelBagsEntity.Write(castleHeartEntity.Read<TeamReference>());
-
-				yield return null;
-
-				// Put inventory into travel bags
-				var inventoryInstanceElements = Core.EntityManager.GetBuffer<InventoryInstanceElement>(travelBagsEntity);
-				var externalInventoryEntity = inventoryInstanceElements[0].ExternalInventoryEntity.GetEntityOnServer();
-
-				var travelBagInventoryBuffer = Core.EntityManager.GetBuffer<InventoryBuffer>(externalInventoryEntity);
-				travelBagInventoryBuffer.Clear();
-				foreach (var inventoryEntity in inventoryEntities)
+				var userEntity = roomOwner.Read<PlayerCharacter>().UserEntity;
+				// Check if they have a castle heart in which case spawn travel bags for them with their inventory
+				var castleHearts = castleHeartQuery.ToEntityArray(Allocator.Temp);
+				foreach (var castleHeartEntity in castleHearts)
 				{
-					var inventory = inventoryEntity.ReadBuffer<InventoryBuffer>();
-					for (var i = 0; i < inventory.Length; ++i)
+					var userOwner = castleHeartEntity.Read<UserOwner>();
+					if (!userOwner.Owner.GetEntityOnServer().Equals(userEntity)) continue;
+
+					// Spawn travel bags
+					var prefabCollection = Core.Server.GetExistingSystemManaged<PrefabCollectionSystem>();
+					prefabCollection._PrefabLookupMap.TryGetValue(Prefabs.TM_Stash_Chest_Rebuilding, out var travelBagsPrefab);
+					var travelBagsEntity = Core.EntityManager.Instantiate(travelBagsPrefab);
+
+					var offset = new float3(1.5f, 0f, 3.25f);
+					// Should figure out a better location for the tile position but for now it is hardcoded
+					var tilePosition = castleHeartEntity.Read<TilePosition>();
+					tilePosition.Tile += new int2(2, 2);
+					travelBagsEntity.Write(tilePosition);
+
+					var translation = castleHeartEntity.Read<Translation>();
+					translation.Value += offset;
+					travelBagsEntity.Write(translation);
+
+					var localTransform = castleHeartEntity.Read<LocalTransform>();
+					localTransform.Position += offset;
+					travelBagsEntity.Write(localTransform);
+
+					var rotation = castleHeartEntity.Read<Rotation>();
+					travelBagsEntity.Write(rotation);
+
+					travelBagsEntity.Write(userOwner);
+					travelBagsEntity.Write(new CastleHeartConnection() { CastleHeartEntity = castleHeartEntity });
+					travelBagsEntity.Write(castleHeartEntity.Read<TeamReference>());
+
+					yield return null;
+
+					// Put inventory into travel bags
+					var inventoryInstanceElements = Core.EntityManager.GetBuffer<InventoryInstanceElement>(travelBagsEntity);
+					var externalInventoryEntity = inventoryInstanceElements[0].ExternalInventoryEntity.GetEntityOnServer();
+
+					var travelBagInventoryBuffer = Core.EntityManager.GetBuffer<InventoryBuffer>(externalInventoryEntity);
+					travelBagInventoryBuffer.Clear();
+					foreach (var inventoryEntity in inventoryEntities)
 					{
-						var item = inventory[i];
-						if (item.Amount >= 1)
+						var inventory = inventoryEntity.ReadBuffer<InventoryBuffer>();
+						for (var i = 0; i < inventory.Length; ++i)
 						{
-							travelBagInventoryBuffer.Add(item);
-							inventory[i] = InventoryBuffer.Empty();
+							var item = inventory[i];
+							if (item.Amount >= 1)
+							{
+								travelBagInventoryBuffer.Add(item);
+								inventory[i] = InventoryBuffer.Empty();
+							}
 						}
 					}
-				}
 
-				foundHeart = true;
-				break;
+					foundHeart = true;
+					break;
+				}
 			}
 
 			if (!foundHeart)
@@ -330,7 +343,7 @@ internal class InnService
 		{
 			if (!owner.Equals(player)) continue;
 
-			Core.StartCoroutine(HandlePlayerLeavingRoom(player, room));
+			Core.StartCoroutine(ClearRoom(room, player));
 			roomOwners[room] = Entity.Null;
 			SaveRooms();
 			return true;
@@ -354,7 +367,7 @@ internal class InnService
 				if (player.Read<Team>().Value != innClanTeamValue)
 				{
 					Core.Log.LogInfo($"Player {player.Read<PlayerCharacter>().Name} left the Inn clan, removing their room {room}");
-					Core.StartCoroutine(HandlePlayerLeavingRoom(player, room));
+					Core.StartCoroutine(ClearRoom(room, player));
 					change = true;
 					roomOwners[room] = Entity.Null;
 				}
@@ -412,7 +425,6 @@ internal class InnService
                     {
                         playersInInn.Add(userEntity);
                         ServerChatUtils.SendSystemMessageToClient(Core.EntityManager, user, "<color=green>Welcome to the Inn!</color> Use <color=yellow>.inn enter</color> to join. Rules of the Inn: <color=yellow>.inn rules</color>. Complete shelter quests: <color=yellow>.inn quests</color>.");
-                        Buffs.AddBuff(userEntity, charEntity, Prefabs.AB_Interact_Curse_Wisp_Buff, -1);
                         Buffs.AddBuff(userEntity, charEntity, Prefabs.SetBonus_Silk_Twilight);
                     }
                 }
@@ -421,7 +433,6 @@ internal class InnService
                     if (playersInInn.Contains(userEntity))
                     {
                         playersInInn.Remove(userEntity);
-                        Buffs.RemoveBuff(charEntity, Prefabs.AB_Interact_Curse_Wisp_Buff);
                         Buffs.RemoveBuff(charEntity, Prefabs.SetBonus_Silk_Twilight);
                     }
                 }
@@ -447,6 +458,8 @@ internal class InnService
             var floors = Core.EntityManager.GetBuffer<CastleRoomFloorsBuffer>(room);
             if (floors.Length == 0)
                 continue;
+			if (floors[0].FloorEntity.GetEntityOnServer().Equals(Entity.Null))
+				continue;
             if (floors[0].FloorEntity.GetEntityOnServer().Read<Team>().Value != teamValue)
                 continue;
             foreach (var floor in floors)
