@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>KindredInnkeeper</AssemblyName>
@@ -14,10 +14,12 @@
   <ItemGroup>
     <None Remove="Data\English.json" />
     <None Remove="Data\PrefabNames.json" />
+    <None Remove="LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Data\English.json" />
     <EmbeddedResource Include="Data\PrefabNames.json" />
+    <EmbeddedResource Include="LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.691" IncludeAssets="compile" />
