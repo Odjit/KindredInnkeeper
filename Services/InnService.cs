@@ -21,8 +21,15 @@ internal class InnService
 {
     static readonly string CONFIG_PATH = Path.Combine(BepInEx.Paths.ConfigPath, MyPluginInfo.PLUGIN_NAME);
     static readonly string ROOMS_PATH = Path.Combine(CONFIG_PATH, "rooms.json");
+	static readonly PrefabGUID findContainerSpotlightPrefab = new(-2014639169);
+	static readonly PrefabGUID unclaimedDoorSpotlightPrefab = new(-1782768874);
 
-    readonly List<Entity> playersInInn = [];
+
+	const float FIND_SPOTLIGHT_DURATION = 15f;
+
+
+
+	readonly List<Entity> playersInInn = [];
     Entity innClanEntity = Entity.Null;
 
     EntityQuery castleHeartQuery;
@@ -50,6 +57,7 @@ internal class InnService
 
 		Core.StartCoroutine(CheckPlayersEnteringInn());
 		Core.StartCoroutine(CheckPlayersLeavingClan());
+		AddUnclaimedSpotlights();
 	}
 
     public void FinishedLoading()
@@ -346,6 +354,7 @@ internal class InnService
 			Core.StartCoroutine(ClearRoom(room, player));
 			roomOwners[room] = Entity.Null;
 			SaveRooms();
+			AddUnclaimedSpotlightToRoom(room);
 			return true;
 		}
 		return false;
@@ -370,6 +379,7 @@ internal class InnService
 					Core.StartCoroutine(ClearRoom(room, player));
 					change = true;
 					roomOwners[room] = Entity.Null;
+					AddUnclaimedSpotlightToRoom(room);
 				}
 			}
 
@@ -424,7 +434,7 @@ internal class InnService
                     if (!playersInInn.Contains(userEntity))
                     {
                         playersInInn.Add(userEntity);
-                        ServerChatUtils.SendSystemMessageToClient(Core.EntityManager, user, "<color=green>Welcome to the Inn!</color> Use <color=yellow>.inn enter</color> to join. Rules of the Inn: <color=yellow>.inn rules</color>. Complete shelter quests: <color=yellow>.inn quests</color>.");
+                        ServerChatUtils.SendSystemMessageToClient(Core.EntityManager, user, "<color=green>Welcome to the Inn!</color> Use <color=yellow>.inn join</color> to join. Inn Info: <color=yellow>.inn info</color>. Complete shelter quests: <color=yellow>.inn quests</color>.");
                         Buffs.AddBuff(userEntity, charEntity, Prefabs.SetBonus_Silk_Twilight);
                     }
                 }
@@ -518,6 +528,8 @@ internal class InnService
 					}
 				}
 
+				AddUnclaimedSpotlightToRoom(room);
+
 				roomOwners.Add(room, Entity.Null);
                 SaveRooms();
                 Core.Log.LogInfo($"Room added to Inn {room.Index}:{room.Version}");
@@ -538,6 +550,7 @@ internal class InnService
 			if (roomOwners.Remove(room))
 			{
 				SaveRooms();
+				RemoveUnclaimedSpotlightFromRoom(room);
 				return true;
 			}
 		}
@@ -561,7 +574,8 @@ internal class InnService
         {
             roomOwners[room] = player;
             SaveRooms();
-            return RoomSetFailure.None;
+			RemoveUnclaimedSpotlightFromRoom(room);
+			return RoomSetFailure.None;
         }
         return RoomSetFailure.RoomDoesNotExist;
     }
@@ -576,7 +590,8 @@ internal class InnService
             {
                 roomOwners[room] = player;
                 SaveRooms();
-                return RoomSetFailure.None;
+				RemoveUnclaimedSpotlightFromRoom(room);
+				return RoomSetFailure.None;
             }
             return RoomSetFailure.AlreadyClaimed;
         }
@@ -658,4 +673,141 @@ internal class InnService
         roomOwner = Entity.Null;
         return false;
     }
+
+	public static Entity GetDoorFromOwner(Entity owner)
+	{
+		foreach ((var room, var roomOwner) in Core.InnService.roomOwners)
+		{
+			if (roomOwner.Equals(owner))
+			{
+				var walls = Core.EntityManager.GetBuffer<CastleRoomWallsBuffer>(room);
+				foreach (var wall in walls)
+				{
+					if (!wall.WallEntity.GetEntityOnServer().Has<CastleBuildingAttachToParentsBuffer>()) continue;
+
+					var attachments = Core.EntityManager.GetBuffer<CastleBuildingAttachToParentsBuffer>(wall.WallEntity.GetEntityOnServer());
+					foreach (var attachment in attachments)
+					{
+						var potentialDoor = attachment.ParentEntity.GetEntityOnServer();
+						if (potentialDoor.Has<Door>())
+						{
+							return potentialDoor;
+						}
+					}
+				}
+			}
+		}
+		return Entity.Null;
+	}
+	readonly Dictionary<Entity, (double expirationTime, List<Entity> targetDoors)> activeSpotlights = [];
+
+	//spotlight a door for a room of the owner
+	public static void AddDoorSpotlight(Entity owner, Entity door)
+	{
+		if (!Core.InnService.activeSpotlights.TryGetValue(owner, out var value))
+		{
+			value = (Core.ServerTime + 60, new List<Entity>());
+			Core.InnService.activeSpotlights.Add(owner, value);
+		}
+		else
+		{
+			value.expirationTime = Core.ServerTime + 60;
+			value.targetDoors.Add(door);
+			Core.InnService.activeSpotlights[owner] = value;
+		}
+		Buffs.RemoveAndAddBuff(owner, door, findContainerSpotlightPrefab, FIND_SPOTLIGHT_DURATION, UpdateSpotlight);
+
+		void UpdateSpotlight(Entity buffEntity)
+		{
+			buffEntity.Write<SpellTarget>(new()
+			{
+				Target = owner
+			});
+			buffEntity.Write<EntityOwner>(new()
+			{
+				Owner = owner
+			});
+			buffEntity.Write<EntityCreator>(new()
+			{
+				Creator = owner
+			});
+		}
+	}
+
+	public static void ClearSpotlights(Entity owner)
+	{
+		if (Core.InnService.activeSpotlights.TryGetValue(owner, out var value))
+		{
+			foreach (var door in value.targetDoors)
+			{
+				Buffs.RemoveBuff(door, findContainerSpotlightPrefab);
+			}
+			Core.InnService.activeSpotlights.Remove(owner);
+		}
+	}
+
+	void AddUnclaimedSpotlights() 
+	{
+		foreach((var room, var owner) in roomOwners)
+		{
+			if (owner.Equals(Entity.Null))
+			{
+				AddUnclaimedSpotlightToRoom(room);
+			}
+			else
+			{
+				RemoveUnclaimedSpotlightFromRoom(room);
+			}
+		}
+	}
+
+	static void AddUnclaimedSpotlightToRoom(Entity room)
+	{
+		var walls = Core.EntityManager.GetBuffer<CastleRoomWallsBuffer>(room);
+		foreach (var wall in walls)
+		{
+			if (!wall.WallEntity.GetEntityOnServer().Has<CastleBuildingAttachToParentsBuffer>()) continue;
+
+			var attachments = Core.EntityManager.GetBuffer<CastleBuildingAttachToParentsBuffer>(wall.WallEntity.GetEntityOnServer());
+			foreach (var attachment in attachments)
+			{
+				var potentialDoor = attachment.ParentEntity.GetEntityOnServer();
+				if (potentialDoor.Has<Door>())
+				{
+					AddUnclaimedDoorSpotlight(potentialDoor);
+				}
+			}
+		}
+	}
+
+	static void RemoveUnclaimedSpotlightFromRoom(Entity room)
+	{
+		var walls = Core.EntityManager.GetBuffer<CastleRoomWallsBuffer>(room);
+		foreach (var wall in walls)
+		{
+			if (!wall.WallEntity.GetEntityOnServer().Has<CastleBuildingAttachToParentsBuffer>()) continue;
+
+			var attachments = Core.EntityManager.GetBuffer<CastleBuildingAttachToParentsBuffer>(wall.WallEntity.GetEntityOnServer());
+			foreach (var attachment in attachments)
+			{
+				var potentialDoor = attachment.ParentEntity.GetEntityOnServer();
+				if (potentialDoor.Has<Door>())
+				{
+					RemoveClaimedDoorSpotlight(potentialDoor);
+				}
+			}
+		}
+	}
+
+	//spotlight any door that is not claimed
+	static void AddUnclaimedDoorSpotlight(Entity door)
+	{
+		Buffs.RemoveAndAddBuff(door, door, unclaimedDoorSpotlightPrefab, -1f);
+	}
+	static void RemoveClaimedDoorSpotlight(Entity door)
+	{
+		Buffs.RemoveBuff(door, unclaimedDoorSpotlightPrefab);
+	}
+
+
 }

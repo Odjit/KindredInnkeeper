@@ -16,7 +16,7 @@ namespace KindredInnkeeper.Commands;
 [CommandGroup("inn")]
 internal class InnCommands
 {
-    [Command("enter", "join", description: "Adds self to a clan of the name Inn that has a leader by the name of InnKeeper", adminOnly: false)]
+    [Command("join", description: "Adds self to a clan of the name Inn that has a leader by the name of InnKeeper", adminOnly: false)]
     public static void AddToClan(ChatCommandContext ctx)
     {
         var userToAddEntity = ctx.Event.SenderUserEntity;
@@ -71,20 +71,34 @@ internal class InnCommands
         ctx.Reply($"<color=white>You have joined the Inn.</color>");
     }
 
-    [Command("rules", description: "Displays the rules of the Inn", adminOnly: false)]
+    [Command("info", description: "Displays the information of the Inn", adminOnly: false)]
     public static void DisplayRules(ChatCommandContext ctx)
     {
         var rules = new StringBuilder();
         rules.AppendLine("<color=yellow>Welcome to the Inn!</color>");
-        rules.AppendLine("<color=green>1.</color> This is temporary stay. Please find other accomodations asap.");
-        rules.AppendLine("<color=green>2.</color> Doors report their guest. Use '.inn vacancy' to see availablility.");
-        rules.AppendLine("<color=green>3.</color> Claim a room: Type '.inn claimroom' in chat while in the room.");
+        rules.AppendLine("<color=green>1.</color> Use <color=green>.inn help</color> to view commands for use with the Inn.");
+        rules.AppendLine("<color=green>2.</color> This is temporary stay. Please find other accomodations asap.");
+        rules.AppendLine("<color=green>3.</color> Do not leave items unattended or steal from shared stations.");
         rules.AppendLine("<color=green>4.</color> Claiming a plot kicks you from the Inn. Your storage will follow.");
         rules.AppendLine("<color=green>5.</color> Leaving the clan will forfeit any items left in your room.");
 		ctx.Reply(rules.ToString());
     }
 
-    [Command("guests", description: "Displays the guests of the Inn", adminOnly: true)]
+	[Command("help", description: "Displays the commands available for the Inn", adminOnly: false)]
+	public static void DisplayHelp(ChatCommandContext ctx)
+	{
+		var help = new StringBuilder();
+		help.AppendLine("<color=yellow>Inn Helpdesk!</color>");
+		help.AppendLine("<color=green>.inn info</color> - Info on the Inn.");
+		help.AppendLine("<color=green>.inn vacancy</color> - Reports occupancy amounts in the Inn.");
+		help.AppendLine("<color=green>.inn claimroom</color> - Use this while standing in a vacant room in an inn. Empty rooms have a purple rune doormat.");
+		help.AppendLine("<color=green>.inn leaveroom</color> - Use this to check out of your room.");
+		help.AppendLine("<color=green>.inn findroom</color> - Creates a spotlight to your door.");
+		help.AppendLine("<color=green>.inn quests</color> - Complete beginning shelter quests.");
+		ctx.Reply(help.ToString());
+	}
+
+	[Command("guests", description: "Displays the guests of the Inn", adminOnly: true)]
     public static void DisplayGuests(ChatCommandContext ctx)
     {
 		var roomOwners = Core.InnService.GetRoomOwners();
@@ -140,7 +154,7 @@ internal class InnCommands
                     return;
             }
         }
-        ctx.Reply("You are not standing in a room.");
+        ctx.Reply("You are not standing in a room at the Inn.");
     }
 
 
@@ -166,7 +180,7 @@ internal class InnCommands
 			}
 			else
 			{
-				ctx.Reply("You haven't claimed a room yet.");
+				ctx.Reply("You haven't claimed a room at the Inn yet.");
 			}
 		}
 	}
@@ -226,7 +240,7 @@ internal class InnCommands
                     return;
             }
         }
-        ctx.Reply("You are not standing in a room.");
+        ctx.Reply("You are not standing in a room at the Inn.");
     }
 
     [Command("roomowner", "ro", adminOnly: true)]
@@ -247,4 +261,22 @@ internal class InnCommands
 		}
 	}
 
+	[Command("findroom", "fr", description:"creates a spotlight to your door", adminOnly: false)]
+    public static void FindMyRoom(ChatCommandContext ctx)
+    {
+		var door = InnService.GetDoorFromOwner(ctx.Event.SenderCharacterEntity);
+		if (door != Entity.Null)
+		{
+			InnService.AddDoorSpotlight(ctx.Event.SenderCharacterEntity, door);
+			ctx.Reply("Follow the beam to your room. Be on the correct floor due to range.");
+		}
+		else
+		{
+			ctx.Reply("No door found for your room at the Inn.");
+		}
+	}
+
+
 }
+
+
