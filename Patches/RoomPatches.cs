@@ -25,7 +25,9 @@ public static class PreventDoorOpenPatch
 			var spellTarget = entity.Read<SpellTarget>();
             var door = spellTarget.Target.GetEntityOnServer();
 
-            var parentBuffer = Core.EntityManager.GetBuffer<CastleBuildingAttachToParentsBuffer>(door);
+			if (!door.Has<CastleBuildingAttachToParentsBuffer>()) continue;
+
+			var parentBuffer = Core.EntityManager.GetBuffer<CastleBuildingAttachToParentsBuffer>(door);
             if (parentBuffer.Length == 0) continue;
 
             var entrance = parentBuffer[0].ParentEntity.GetEntityOnServer();
