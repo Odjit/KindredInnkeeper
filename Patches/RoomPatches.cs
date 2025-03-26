@@ -4,7 +4,6 @@ using ProjectM.CastleBuilding;
 using ProjectM.Gameplay.Systems;
 using ProjectM.Network;
 using Unity.Collections;
-using Unity.Content;
 using Unity.Entities;
 
 namespace KindredInnkeeper.Patches;
@@ -106,7 +105,8 @@ public static class PreventInventoryMovements
                 continue;
             }
         }
-    }
+		entities.Dispose();
+	}
 }
 
 [HarmonyPatch(typeof(MoveAllItemsBetweenInventoriesSystem), nameof(MoveAllItemsBetweenInventoriesSystem.OnUpdate))]
@@ -132,7 +132,8 @@ public static class PreventInventoryMovementsAll
                 continue;
             }
         }
-    }
+		entities.Dispose();
+	}
 }
 
 [HarmonyPatch(typeof(MoveAllItemsBetweenInventoriesV2System), nameof(MoveAllItemsBetweenInventoriesV2System.OnUpdate))]
@@ -158,6 +159,7 @@ public static class PreventInventoryMovementsAllV2
 				continue;
 			}
 		}
+		entities.Dispose();
 	}
 }
 
@@ -184,7 +186,8 @@ public static class PreventSmartMerge
                 continue;
             }
         }
-    }
+		entities.Dispose();
+	}
 }
 
 [HarmonyPatch(typeof(SortAllInventoriesSystem), nameof(SortAllInventoriesSystem.OnUpdate))]
@@ -208,7 +211,8 @@ public static class PreventSortAll
                 continue;
             }
         }
-    }
+		entities.Dispose();
+	}
 }
 
 [HarmonyPatch(typeof(SortSingleInventorySystem), nameof(SortSingleInventorySystem.OnUpdate))]
@@ -232,7 +236,8 @@ public static class PreventSortSingle
                 continue;
             }
         }
-    }
+		entities.Dispose();
+	}
 }
 
 [HarmonyPatch(typeof(SplitItemSystem), nameof(SplitItemSystem.OnUpdate))]
@@ -256,7 +261,8 @@ public static class PreventSplit
                 continue;
             }
         }
-    }
+		entities.Dispose();
+	}
 }
 
 [HarmonyPatch(typeof(DropInventoryItemSystem), nameof(DropInventoryItemSystem.OnUpdate))]
@@ -280,6 +286,7 @@ public static class PreventDropInventoryItem
 				continue;
 			}
 		}
+		entities.Dispose();
 	}
 }
 
@@ -301,7 +308,8 @@ public static class PreventCoffinBinding
                 continue;
             }
         }
-    }
+		entities.Dispose();
+	}
 }
 
 [HarmonyPatch(typeof(NameableInteractableSystem), nameof(NameableInteractableSystem.OnUpdate))]
@@ -322,6 +330,7 @@ public static class PreventRenames
 				Core.EntityManager.DestroyEntity(entity);
 			}
 		}
+		entities.Dispose();
 	}
 }
 

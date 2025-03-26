@@ -130,6 +130,7 @@ static class PlaceTileModelSystemPatch
 			
 			Core.EntityManager.DestroyEntity(wallpaperEvent);
 		}
+		wallpaperEvents.Dispose();
 
 		var tileModelVariationEvents = __instance._SetVariationQuery.ToEntityArray(Allocator.Temp);
 		foreach (var tileModelVariationEvent in tileModelVariationEvents)
@@ -144,5 +145,6 @@ static class PlaceTileModelSystemPatch
 
 			Core.EntityManager.DestroyEntity(tileModelVariationEvent);
 		}
+		tileModelVariationEvents.Dispose();
 	}
 }

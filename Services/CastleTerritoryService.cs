@@ -9,7 +9,7 @@ namespace KindredInnkeeper.Services;
 internal class CastleTerritoryService
 {
     const float BLOCK_SIZE = 10;
-    Dictionary<int2, int> blockCoordToTerritoryIndex = [];
+    readonly Dictionary<int2, int> blockCoordToTerritoryIndex = [];
 
     public CastleTerritoryService()
     {
@@ -34,7 +34,7 @@ internal class CastleTerritoryService
         return -1;
     }
 
-    public Entity GetHeartForTerritory(int territoryIndex)
+    public static Entity GetHeartForTerritory(int territoryIndex)
     {
         if(territoryIndex == -1)
             return Entity.Null;
@@ -60,7 +60,7 @@ internal class CastleTerritoryService
         return -1;
     }
 
-    int2 ConvertTileGridToBlockCoord(int2 tileCoord)
+    static int2 ConvertTileGridToBlockCoord(int2 tileCoord)
     {
         return new int2((int)math.floor(tileCoord.x / BLOCK_SIZE), (int)math.floor(tileCoord.y / BLOCK_SIZE));
     }
@@ -69,7 +69,7 @@ internal class CastleTerritoryService
 		return new float3(Mathf.FloorToInt(pos.x * 2) + 6400, pos.y, Mathf.FloorToInt(pos.z * 2) + 6400);
 	}
 
-	int2 ConvertPosToBlockCoord(float3 pos)
+	static int2 ConvertPosToBlockCoord(float3 pos)
     {
         var gridPos = ConvertPosToGrid(pos);
         return new int2((int)math.floor(gridPos.x / BLOCK_SIZE), (int)math.floor(gridPos.z / BLOCK_SIZE));
