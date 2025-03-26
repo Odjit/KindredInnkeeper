@@ -6,19 +6,37 @@ KindredInnkeeper creates an inn for V Rising, allowing new players to join and g
 Feel free to reach out to me on Discord (odjit) if you have any questions or need help with the mod.
 
 ## Details
-To get started, you must assign a clan as the inn. This is done by using the `.inn create` command. Any leader in the clan can build normally.
-I recommend having a spare account be the plot owner, if you have kindred logistics installed, to keep all settings off for that plot.
-Place a heart, and build the inn as you wish to have it. I recommend rooms having a wood coffin, at least one chest, and a neutral research table. (Make sure to move research table via build menu after spawning it, to connect it to the room)
-For the inn to function best, I recommend grabbing Kindred Schematics to lock/movelock the territory once completed, and to block the relocation of the castle heart.
-Once your layout is complete, use the `.inn addroom` command to add rooms to the inn. After a room is added, players can claim it using the `.inn claimroom` command. Players can leave their room at any time using the `.inn leaveroom` command.
-While on the territory, players will be immune to the sun.
-Players cannot build anything or change decor on the plot while in the clan. 
-Players cannot loot chests in another's claimed room.
-Players can only claim one room at a time.
-You cannot join the inn if you are in a clan or already have a plot.
-Players cannot open the door to another's claimed room.
-If a player is in a room, they can leave it, even if it is not their room.
-If a player goes to place a castle heart, they will be warned that that will cause them to be removed from the Inn. Once they again place the heart, they will get removed and anything stored in the chests will get brought to their new plot in travel bags.
+
+### Setting Up the Inn
+To begin, set a clan as the inn by using the `.inn create` command to assign your current clan. Any clan leader can build normally within the inn. If you have Kindred Logistics installed, it is recommended to designate a spare account as the plot owner to keep all settings off for that plot.
+
+### Building the Inn
+1. **Foundation**: Place a heart and build the inn to your specifications. It is advisable to include rooms with a coffin and at least one chest for storage.
+  
+2. **Research Tables**: Utilize Kindred Schematics to create a neutral research table. Remember to move the research table via the build menu after spawning it to ensure it connects to the room properly. This is so that players do not share research unlocks without interacting with the particular table.
+
+### Territory Management
+To protect the inn properly, consider using Kindred Schematics to:
+- Lock or move-lock the territory once completed. (So players cannot move or dismantle the inn)
+- Block the relocation of the castle heart.
+
+### Room Management
+Once your layout is complete, use the `.inn addroom` command to add rooms to the inn. After a room is added, players can claim it using the `.inn claimroom` command. Players may leave their room at any time using the `.inn leaveroom` command.
+
+### Gameplay Rules
+- While on the territory, players are immune to sunlight.
+- Players cannot build or change decorations on the plot while in the clan.
+- Players cannot loot chests in another's claimed room.
+- Players can only claim one room at a time.
+- Players cannot join the inn via the join command if they are in a clan or already have a plot.
+- Players cannot open the door to another's claimed room from the hall.
+- Players can leave a room even if it is not theirs.
+- If a player attempts to place a castle heart, they will receive a warning that this action will remove them from the inn. Upon placing the heart, they will be removed, and any items stored in chests will be transferred to their new plot in travel bags.
+
+### Known Quirks
+- As base game allows any clan member to invite, someone who owns a plot could be invited to the clan by a member. This does not break the inn, but would cause issues for the invited on their plot. They can leave the clan to fix.
+- If you leave a room as the Plot Owner, you will spawn travel bags with any remaining items at the castle heart.
+- Do not have an inn room touching (minesweeper rules) where the castle heart is. The heart is a little bigger than its square, and it messes with the rooms.
 
 
 ## Command List
@@ -38,11 +56,13 @@ If a player goes to place a castle heart, they will be warned that that will cau
   - Sets the owner of the room to the specified player.
 - `.inn roomowner`
   - Names the owner of the room you are in.
+- `.inn inforeload`
+  - Reloads the inn info from the config file.
 
 ### Player Accessible Commands:
-- `.inn enter`
+- `.inn join`
   - Adds the user to the inn clan.
-- `.inn rules`
+- `.inn info`
   - Lists the rules of the inn.
 - `.inn quests`
   - Completes quests relating to a castle heart.
