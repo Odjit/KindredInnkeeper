@@ -1,5 +1,8 @@
+using Il2CppSystem;
 using KindredInnkeeper.Commands.Converters;
 using KindredInnkeeper.Services;
+using KindreInnkeeper.Services;
+using Newtonsoft.Json;
 using ProjectM;
 using ProjectM.CastleBuilding;
 using ProjectM.Network;
@@ -16,7 +19,41 @@ namespace KindredInnkeeper.Commands;
 [CommandGroup("inn")]
 internal class InnCommands
 {
-    [Command("join", description: "Adds self to a clan of the name Inn that has a leader by the name of InnKeeper", adminOnly: false)]
+	[Command("create", description: "Makes your current clan the Inn if one doesn't exist", adminOnly: true)]
+	public static void CreateInn(ChatCommandContext ctx)
+	{
+		var clanEntity = Core.InnService.GetInnClan();
+		if (clanEntity != Entity.Null)
+		{
+			ctx.Reply($"The Inn already exists with the clan <color=white>{clanEntity.Read<ClanTeam>().Name}</color>.");
+			return;
+		}
+
+		if (Core.InnService.MakeCurrentClanAnInn(ctx.Event.SenderCharacterEntity))
+		{
+			clanEntity = Core.InnService.GetInnClan();
+			ctx.Reply($"Successfully made the clan <color=white>{clanEntity.Read<ClanTeam>().Name}</color> the Inn.");
+		}
+		else
+		{
+			ctx.Reply("You are not in a clan.");
+		}
+	}
+
+	[Command("remove", description: "Removes the currently set Inn clan", adminOnly: true)]
+	public static void RemoveInn(ChatCommandContext ctx)
+	{
+		if (Core.InnService.RemoveInnClan())
+		{
+			ctx.Reply($"Successfully removed the Inn clan.");
+		}
+		else
+		{
+			ctx.Reply($"The Inn does not exist.");
+		}
+	}
+
+	[Command("join", description: "Adds self to a clan of the Inn", adminOnly: false)]
     public static void AddToClan(ChatCommandContext ctx)
     {
         var userToAddEntity = ctx.Event.SenderUserEntity;
@@ -40,12 +77,13 @@ internal class InnCommands
                 ctx.Reply("You cannot join the Inn while owning a territory.");
                 return;
             }
-        }
+		}
 
-        var clanEntity = Core.InnService.GetInnClan();
+
+		var clanEntity = Core.InnService.GetInnClan();
         if (clanEntity == Entity.Null)
         {
-            ctx.Reply($"No clan found matching name 'Inn' with a leader of 'InnKeeper'");
+            ctx.Reply($"No clan is set as the Inn");
             return;
         }
 
@@ -71,18 +109,19 @@ internal class InnCommands
         ctx.Reply($"<color=white>You have joined the Inn.</color>");
     }
 
-    [Command("info", description: "Displays the information of the Inn", adminOnly: false)]
-    public static void DisplayRules(ChatCommandContext ctx)
-    {
-        var rules = new StringBuilder();
-        rules.AppendLine("<color=yellow>Welcome to the Inn!</color>");
-        rules.AppendLine("<color=green>1.</color> Use <color=green>.inn help</color> to view commands for use with the Inn.");
-        rules.AppendLine("<color=green>2.</color> This is temporary stay. Please find other accomodations asap.");
-        rules.AppendLine("<color=green>3.</color> Do not leave items unattended or steal from shared stations.");
-        rules.AppendLine("<color=green>4.</color> Claiming a plot kicks you from the Inn. Your storage will follow.");
-        rules.AppendLine("<color=green>5.</color> Leaving the clan will forfeit any items left in your room.");
-		ctx.Reply(rules.ToString());
-    }
+	[Command("info", description: "Displays the information of the Inn", adminOnly: false)]
+	public static void DisplayInnInfo(ChatCommandContext ctx)
+	{
+		var info = Core.ConfigSettings.InnInfo;
+		ctx.Reply(string.Join("\n", info));
+	}
+
+	[Command("inforeload", description: "Reloads the Inn information", adminOnly: true)]
+	public static void ReloadInnInfo(ChatCommandContext ctx)
+	{
+		Core.ConfigSettings.LoadConfig();
+		ctx.Reply("Reloaded Inn information.");
+	}
 
 	[Command("help", description: "Displays the commands available for the Inn", adminOnly: false)]
 	public static void DisplayHelp(ChatCommandContext ctx)

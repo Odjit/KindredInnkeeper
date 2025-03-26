@@ -6,12 +6,13 @@ KindredInnkeeper creates an inn for V Rising, allowing new players to join and g
 Feel free to reach out to me on Discord (odjit) if you have any questions or need help with the mod.
 
 ## Details
-To get started, you will need a player named "InnKeeper" and they must have a clan called "Inn".
-Place a heart, and build the inn as you wish to have it. I recommend rooms having a wood coffin, at least one chest, and a neutral research table.
-For the inn to function best, I also recommend grabbing Kindred Schematics to lock/movelock the territory once completed, and to block the relocation of the castle heart.
-Once your layout is complete, use the `.inn addroom` command to add rooms to the inn. Once a room is added, players can claim it using the `.inn claimroom` command. Players can leave their room at any time using the `.inn leaveroom` command.
-While on the territory, players will be immune to the sun, and will have a slight speed increase from the cursed forest wisp.
-Players cannot build anything while in the clan.
+To get started, you must assign a clan as the inn. This is done by using the `.inn create` command. Any leader in the clan can build normally.
+I recommend having a spare account be the plot owner, if you have kindred logistics installed, to keep all settings off for that plot.
+Place a heart, and build the inn as you wish to have it. I recommend rooms having a wood coffin, at least one chest, and a neutral research table. (Make sure to move research table via build menu after spawning it, to connect it to the room)
+For the inn to function best, I recommend grabbing Kindred Schematics to lock/movelock the territory once completed, and to block the relocation of the castle heart.
+Once your layout is complete, use the `.inn addroom` command to add rooms to the inn. After a room is added, players can claim it using the `.inn claimroom` command. Players can leave their room at any time using the `.inn leaveroom` command.
+While on the territory, players will be immune to the sun.
+Players cannot build anything or change decor on the plot while in the clan. 
 Players cannot loot chests in another's claimed room.
 Players can only claim one room at a time.
 You cannot join the inn if you are in a clan or already have a plot.
@@ -23,6 +24,10 @@ If a player goes to place a castle heart, they will be warned that that will cau
 ## Command List
 
 ### Staff Commands
+- `.inn create`
+  - Makes your current clan the Inn if one doesn't exist.
+- `.inn remove`
+  - Removes the currently set Inn clan.
 - `.inn addroom`
   - Adds a room to the inn.
 - `.inn removeroom`
