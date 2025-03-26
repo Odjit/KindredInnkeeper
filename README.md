@@ -1,7 +1,7 @@
 ![](logo.png)
 # KindredInnkeeper for V Rising
 
-KindredInnkeeper creates an inn for V Rising, allowing new players to join and get started quickly even with no plots being available.
+KindredInnkeeper creates an inn for V Rising, allowing new players to join and get started quickly even with no plots being available. It introduces a structured way to claim temporary housing within a clan-designated inn.
 
 Feel free to reach out to me on Discord (odjit) if you have any questions or need help with the mod.
 
