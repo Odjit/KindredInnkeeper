@@ -2,14 +2,13 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>KindredInnkeeper</AssemblyName>
-    <Description>Assign a territory/clan that is joinable by all</Description>
-    <Version>0.1.10</Version>
+    <Description>Assign a territory/clan that is joinable by all and serves as a shared living space.</Description>
+    <Version>10.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <RootNamespace>KindredInnkeeper</RootNamespace>
-    <AssemblyVersion>0.1.10.0</AssemblyVersion>
-    <FileVersion>0.1.10.0</FileVersion>
-    <InformationalVersion>0.1.10+1.Branch.main.Sha.c33d0879382e1a0da34861ec55914ba7e637a80e</InformationalVersion>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Data\English.json" />

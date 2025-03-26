@@ -40,6 +40,7 @@ internal class PlayerService
 
 			var charEntity = userData.LocalCharacter.GetEntityOnServer();
 		}
+		userEntities.Dispose();
 
 
 		var onlinePlayers = namePlayerCache.Values.Where(p => p.IsOnline).Select(p => $"\t{p.CharacterName}");
@@ -102,6 +103,7 @@ internal class PlayerService
 			if (Core.EntityManager.Exists(entity) && entity.Read<User>().IsConnected)
 				yield return entity;
 		}
+		_userEntities.Dispose();
 	}
 
 

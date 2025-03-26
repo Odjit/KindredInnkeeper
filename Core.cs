@@ -3,19 +3,17 @@ using System.Runtime.CompilerServices;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP.Utils.Collections;
 using KindredInnkeeper.Services;
+using KindreInnkeeper.Services;
 using ProjectM;
 using ProjectM.Physics;
 using ProjectM.Scripting;
 using Unity.Entities;
 using UnityEngine;
-using KindredInnkeeper.Data;
-
 
 namespace KindredInnkeeper;
 
 internal static class Core
 {
-
 	public static World Server { get; } = GetWorld("Server") ?? throw new System.Exception("There is no Server world (yet). Did you install a server mod on the client?");
 
     public static EntityCommandBufferSystem EntityCommandBufferSystem { get; } = Server.GetExistingSystemManaged<EntityCommandBufferSystem>();
@@ -36,7 +34,8 @@ internal static class Core
 	public static LocalizationService Localization { get; } = new();
 	public static PlayerService Players { get; internal set; }
 	public static InnService InnService { get; internal set; }
-    public static PrefabCollectionSystem PrefabCollection { get; internal set; }
+	public static ConfigSettingsService ConfigSettings { get; internal set; }
+	public static PrefabCollectionSystem PrefabCollection { get; internal set; }
 
     static MonoBehaviour monoBehaviour;
 
@@ -57,10 +56,12 @@ internal static class Core
 
 
 
+
 		Players = new();
 
 		CastleTerritory = new();
         InnService = new();
+		ConfigSettings = new();
 
 		KindredInnkeeper.Data.Character.Populate();
 

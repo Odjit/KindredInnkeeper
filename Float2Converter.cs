@@ -1,7 +1,9 @@
-﻿using System;
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Unity.Mathematics;
+
+namespace KindredInnkeeper;
 
 public class Float2Converter : JsonConverter<float2>
 {

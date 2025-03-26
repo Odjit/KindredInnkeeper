@@ -1,18 +1,15 @@
 using System;
-using KindredInnkeeper.Data;
 using HarmonyLib;
+using KindredInnkeeper.Data;
 using ProjectM;
 using ProjectM.Network;
+using Stunlock.Core;
 using Stunlock.Network;
 using Unity.Collections;
-using Stunlock.Core;
-using ProjectM.Behaviours;
-using KindredInnkeeper.Models;
-using KindredInnkeeper.Services;
 
 namespace KindredInnkeeper.Patches;
 
-
+#pragma warning disable IDE0060
 [HarmonyPatch(typeof(ServerBootstrapSystem), nameof(ServerBootstrapSystem.OnUserConnected))]
 public static class OnUserConnected_Patch
 {
@@ -32,7 +29,6 @@ public static class OnUserConnected_Patch
 			{
 				var playerName = userData.CharacterName.ToString();
 				Core.Players.UpdatePlayerCache(userEntity, playerName, playerName);
-				Core.Log.LogInfo($"Player {playerName} connected");
 			}
 		}
 		catch (Exception e)
@@ -59,8 +55,6 @@ public static class OnUserDisconnected_Patch
 			{
 				var playerName = userData.CharacterName.ToString();
 				Core.Players.UpdatePlayerCache(serverClient.UserEntity, playerName, playerName, true);
-
-				Core.Log.LogInfo($"Player {playerName} disconnected");
 			}
 		}
 		catch { };
@@ -88,12 +82,9 @@ public class Destroy_TravelBuffSystem_Patch
 				var userEntity = __instance.EntityManager.GetComponentData<PlayerCharacter>(owner).UserEntity;
 				var playerName = __instance.EntityManager.GetComponentData<User>(userEntity).CharacterName.ToString();
 
-
 				Core.Players.UpdatePlayerCache(userEntity, playerName, playerName);
-
-				Core.Log.LogInfo($"Player {playerName} created");
 			}
 		}
-
+		entities.Dispose();
 	}
 }
