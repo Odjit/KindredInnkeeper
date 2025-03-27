@@ -35,9 +35,9 @@ internal static class Core
 	public static PlayerService Players { get; internal set; }
 	public static InnService InnService { get; internal set; }
 	public static ConfigSettingsService ConfigSettings { get; internal set; }
-	public static PrefabCollectionSystem PrefabCollection { get; internal set; }
 
-    static MonoBehaviour monoBehaviour;
+
+	static MonoBehaviour monoBehaviour;
 
 	public const int MAX_REPLY_LENGTH = 509;
 

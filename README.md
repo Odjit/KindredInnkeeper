@@ -13,11 +13,13 @@ To begin, set a clan as the inn by using the `.inn create` command to assign you
 ### Building the Inn
 1. **Foundation**: Place a heart and build the inn to your specifications. It is advisable to include rooms with a coffin and at least one chest for storage.
   
-2. **Research Tables**: Utilize Kindred Schematics to create a neutral research table. Remember to move the research table via the build menu after spawning it to ensure it connects to the room properly. This is so that players do not share research unlocks without interacting with the particular table.
+2. **Neutral Research Tables**: This is so that players do not share research unlocks without interacting with the particular table. Remember to move the research table via the build menu after spawning it to ensure it connects to the room properly. 
+
+3. **Kindred Schematics**: Enhance your inn by using KindredSchematics to add decorations and furniture. Also allows for unlocking the territory if needed. Use immortal to stop flowers from being harvested or entities destroyed (barrels, haystacks, etc).
 
 ### Territory Management
-To protect the inn properly, consider using Kindred Schematics to:
-- Lock or move-lock the territory once completed. (So players cannot move or dismantle the inn)
+To protect the inn properly:
+- Lock or move-lock the territory once completed. (So players cannot move or dismantle the inn building tiles.)
 - Block the relocation of the castle heart.
 
 ### Room Management
@@ -58,6 +60,14 @@ Once your layout is complete, use the `.inn addroom` command to add rooms to the
   - Names the owner of the room you are in.
 - `.inn inforeload`
   - Reloads the inn info from the config file.
+- `.inn dismantleoff`
+  - stops the dismantling of all tiles on the plot you're on. (will cause lag)
+- `.inn moveoff`
+  - stops the moving of all tiles on the plot you're on. (will cause lag)
+- `.inn blockrelocate`
+  - Blocks the relocation of the castle heart of the plot you're on.
+- `.inn spawntable (table research tier: 1/2/3)`
+  - Spawns a neutral research table at the mouse location.
 
 ### Player Accessible Commands:
 - `.inn join`

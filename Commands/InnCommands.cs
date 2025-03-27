@@ -6,11 +6,16 @@ using Newtonsoft.Json;
 using ProjectM;
 using ProjectM.CastleBuilding;
 using ProjectM.Network;
+using ProjectM.Tiles;
 using Stunlock.Core;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Unity.Entities;
+using Unity.Mathematics;
+using Unity.Physics;
+using Unity.Transforms;
+using UnityEngine;
 using VampireCommandFramework;
 
 
@@ -315,7 +320,114 @@ internal class InnCommands
 		}
 	}
 
+	[Command("dismantleoff", description: "Locks all tiles in a territory that you're on", adminOnly: true)]
+    public static void LockTerritory(ChatCommandContext ctx)
+    {
+        var playerPos = ctx.Event.SenderCharacterEntity.Read<LocalToWorld>().Position;
+		int territoryIndex = Core.CastleTerritory.GetTerritoryIndex(playerPos);
 
+		var tiles = Helper.GetAllEntitiesInTerritory<TilePosition>(territoryIndex);
+        foreach (var tile in tiles)
+        {
+            if (tile.Has<EditableTileModel>())
+            {
+                var etm = tile.Read<EditableTileModel>();
+                etm.CanDismantle = false;
+                tile.Write(etm);
+            }
+        }
+
+        ctx.Reply($"Locked {tiles.Count()} tiles in territory {territoryIndex}");
+    }
+
+	[Command("moveoff", description: "Prevents tiles from being moved on the territory that you're on", adminOnly: true)]
+	public static void MoveLockTerritory(ChatCommandContext ctx)
+	{
+		var playerPos = ctx.Event.SenderCharacterEntity.Read<LocalToWorld>().Position;
+		int territoryIndex = Core.CastleTerritory.GetTerritoryIndex(playerPos);
+		var tiles = Helper.GetAllEntitiesInTerritory<TilePosition>(territoryIndex);
+		foreach (var tile in tiles)
+		{
+			if (tile.Has<EditableTileModel>())
+			{
+				var etm = tile.Read<EditableTileModel>();
+				etm.CanMoveAfterBuild = false;
+				tile.Write(etm);
+			}
+		}
+
+		ctx.Reply($"Move locked {tiles.Count()} tiles in territory {territoryIndex}");
+	}
+
+	[Command("blockrelocate", "br", description: "Blocks the ability to relocate the castle", adminOnly: true)]
+	public static void BlockRelocation(ChatCommandContext ctx)
+	{
+		var playerPos = ctx.Event.SenderCharacterEntity.Read<LocalToWorld>().Position;
+		int territoryIndex = Core.CastleTerritory.GetTerritoryIndex(playerPos);
+        var castleHeart = CastleTerritoryService.GetHeartForTerritory(territoryIndex);
+		if (castleHeart != Entity.Null)
+		{ 
+			var castleHeartComponent = castleHeart.Read<CastleHeart>();
+			castleHeartComponent.LastRelocationTime = double.PositiveInfinity;
+			castleHeart.Write(castleHeartComponent);
+			ctx.Reply("Relocation Blocked");
+			return;
+		}
+		ctx.Reply("No castle heart found on this territory.");
+
+	}
+
+	[Command("spawntable", description: "Spawns a chosen research table at mouse location", adminOnly: true)]
+	public static void SpawnInnTable(ChatCommandContext ctx, int tableType)
+	{
+		PrefabGUID prefabGuid = tableType switch
+		{
+			1 => new PrefabGUID(-495424062),
+			2 => new PrefabGUID(-1292809886),
+			3 => new PrefabGUID(-1262194203),
+			_ => PrefabGUID.Empty
+		};
+
+		if (prefabGuid == PrefabGUID.Empty)
+		{
+			ctx.Reply("Invalid table type. Use .inn spawntable 1, 2, or 3");
+			return;
+		}
+
+    if (!Core.PrefabCollectionSystem._PrefabLookupMap.TryGetValueWithoutLogging(prefabGuid, out var prefab) &&
+        !Core.PrefabCollectionSystem._PrefabGuidToEntityMap.TryGetValue(prefabGuid, out prefab))
+    {
+        ctx.Reply("Tile not found");
+        return;
+    }
+
+		var spawnPos = ctx.Event.SenderCharacterEntity.Read<EntityAimData>().AimPosition;
+		var rot = ctx.Event.SenderCharacterEntity.Read<Rotation>().Value;
+
+		var entity = Core.EntityManager.Instantiate(prefab);
+		entity.Write(new Translation { Value = spawnPos });
+		entity.Write(new Rotation { Value = rot });
+
+		if (entity.Has<TilePosition>())
+		{
+			var tilePos = entity.Read<TilePosition>();
+			// Get rotation around Y axis
+			var euler = rot.ToEulerAngles();
+			tilePos.TileRotation = (TileRotation)(Mathf.Floor((360 - math.degrees(euler.y) - 45) / 90) % 4);
+			entity.Write(tilePos);
+
+			if (entity.Has<StaticTransformCompatible>())
+			{
+				var stc = entity.Read<StaticTransformCompatible>();
+				stc.NonStaticTransform_Rotation = tilePos.TileRotation;
+				entity.Write(stc);
+			}
+
+			entity.Write(new Rotation { Value = quaternion.RotateY(math.radians(90 * (int)tilePos.TileRotation)) });
+		}
+
+		ctx.Reply($"Spawned Research Station Table Type {tableType}");
+	}
 }
 
 
