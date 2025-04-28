@@ -23,6 +23,7 @@ static class PlaceTileModelSystemPatch
         foreach (var buildEvent in buildEvents)
         {
             var fromCharacter = buildEvent.Read<FromCharacter>();
+			var btme = buildEvent.Read<BuildTileModelEvent>();
 
             var playerTeamValue = fromCharacter.User.Read<Team>().Value;
             if (playerTeamValue != clanTeamValue) continue;
@@ -30,15 +31,16 @@ static class PlaceTileModelSystemPatch
 			var clanRole = fromCharacter.User.Read<ClanRole>();
 			if (clanRole.Value == ClanRoleEnum.Leader) continue;
 
-			var btme = buildEvent.Read<BuildTileModelEvent>();
+			
             if (btme.PrefabGuid == Data.Prefabs.TM_BloodFountain_CastleHeart)
             {
                 if(!lastBuildCastleHeart.TryGetValue(fromCharacter.Character, out var lastBuildTime) || 
                    lastBuildTime + 60 < Core.ServerTime)
                 {
-                    ServerChatUtils.SendSystemMessageToClient(Core.EntityManager,
+					var message = new FixedString512Bytes("If you want to build a castle heart make note you will be removed from the inn.  Try building another one within a minute to actually place one.");
+					ServerChatUtils.SendSystemMessageToClient(Core.EntityManager,
                     fromCharacter.User.Read<User>(),
-                    "If you want to build a castle heart make note you will be removed from the inn.  Try building another one within a minute to actually place one.");
+                    ref message);
 
                     if (lastBuildCastleHeart.ContainsKey(fromCharacter.Character))
                     {
@@ -90,10 +92,13 @@ static class PlaceTileModelSystemPatch
                             continue;
                         }
 
-                        var entity = Core.EntityManager.CreateEntity(
-                            ComponentType.ReadWrite<FromCharacter>(),
-                            ComponentType.ReadWrite<ClanEvents_Client.Kick_Request>()
-                            );
+
+						var archetype = Core.EntityManager.CreateArchetype(new ComponentType[] {
+							ComponentType.ReadWrite<FromCharacter>(),
+							ComponentType.ReadWrite<ClanEvents_Client.Kick_Request>()
+						});
+
+						var entity = Core.EntityManager.CreateEntity(archetype);
                         entity.Write(fromCharacterForLeader);
 
                         entity.Write(new ClanEvents_Client.Kick_Request()
@@ -101,21 +106,24 @@ static class PlaceTileModelSystemPatch
                             TargetUserIndex = members[i].UserIndex
                         });
 
+						var message = new FixedString512Bytes("Removing you from the Inn and good luck on your castle!");
                         ServerChatUtils.SendSystemMessageToClient(Core.EntityManager,
                         fromCharacter.User.Read<User>(),
-                        "Removing you from the Inn and good luck on your castle!");
+                        ref message);
                     }
                 }
             }
             else
             {
+				var message = new FixedString512Bytes("Can't build anything besides a castle heart while a member of the Inn.  Note building a castle heart will kick you.");
                 ServerChatUtils.SendSystemMessageToClient(Core.EntityManager, 
                     fromCharacter.Character.Read<PlayerCharacter>().UserEntity.Read<User>(),
-                    "Can't build anything besides a castle heart while a member of the Inn.  Note building a castle heart will kick you.");
+                    ref message);
                 Core.EntityManager.DestroyEntity(buildEvent);
             }
         }
-        buildEvents.Dispose();
+
+		buildEvents.Dispose();
 
 		var wallpaperEvents = __instance._BuildWallpaperQuery.ToEntityArray(Allocator.Temp);
 		foreach (var wallpaperEvent in wallpaperEvents)

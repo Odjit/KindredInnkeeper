@@ -75,13 +75,12 @@ internal static partial class Helper
 		if (includePrefab) options |= EntityQueryOptions.IncludePrefab;
 		if (includeDestroyed) options |= EntityQueryOptions.IncludeDestroyTag;
 
-		EntityQueryDesc queryDesc = new()
-		{
-			All = new ComponentType[] { new(Il2CppType.Of<T1>(), ComponentType.AccessMode.ReadWrite) },
-			Options = options
-		};
+		var entityQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
+			.AddAll(new(Il2CppType.Of<T1>(), ComponentType.AccessMode.ReadWrite))
+			.WithOptions(options);
 
-		var query = Core.EntityManager.CreateEntityQuery(queryDesc);
+		var query = Core.EntityManager.CreateEntityQuery(ref entityQueryBuilder);
+		entityQueryBuilder.Dispose();
 
 		var entities = query.ToEntityArray(Allocator.Temp);
 		return entities;
@@ -96,13 +95,13 @@ internal static partial class Helper
 		if (includePrefab) options |= EntityQueryOptions.IncludePrefab;
 		if (includeDestroyed) options |= EntityQueryOptions.IncludeDestroyTag;
 
-		EntityQueryDesc queryDesc = new()
-		{
-			All = new ComponentType[] { new(Il2CppType.Of<T1>(), ComponentType.AccessMode.ReadWrite), new(Il2CppType.Of<T2>(), ComponentType.AccessMode.ReadWrite) },
-			Options = options
-		};
+		var entityQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
+			.AddAll(new(Il2CppType.Of<T1>(), ComponentType.AccessMode.ReadWrite))
+			.AddAll(new(Il2CppType.Of<T2>(), ComponentType.AccessMode.ReadWrite))
+			.WithOptions(options);
 
-		var query = Core.EntityManager.CreateEntityQuery(queryDesc);
+		var query = Core.EntityManager.CreateEntityQuery(ref entityQueryBuilder);
+		entityQueryBuilder.Dispose();
 
 		var entities = query.ToEntityArray(Allocator.Temp);
 		return entities;
@@ -128,14 +127,12 @@ internal static partial class Helper
 	{
 		if (tilePositionQuery == default)
 		{
-			tilePositionQuery = Core.EntityManager.CreateEntityQuery(new EntityQueryDesc
-			{
-				All = new ComponentType[] {
-					new(Il2CppType.Of<TilePosition>(), ComponentType.AccessMode.ReadOnly),
-					new(Il2CppType.Of<Translation>(), ComponentType.AccessMode.ReadOnly)
-				},
-				Options = EntityQueryOptions.IncludeDisabled | EntityQueryOptions.IncludeSpawnTag
-			});
+			var entityQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
+				.AddAll(new(Il2CppType.Of<TilePosition>(), ComponentType.AccessMode.ReadOnly))
+				.AddAll(new(Il2CppType.Of<Translation>(), ComponentType.AccessMode.ReadOnly))
+				.WithOptions(EntityQueryOptions.IncludeDisabled | EntityQueryOptions.IncludeSpawnTag);
+			tilePositionQuery = Core.EntityManager.CreateEntityQuery(ref entityQueryBuilder);
+			entityQueryBuilder.Dispose();
 		}
 
 		var closestEntity = Entity.Null;
@@ -218,15 +215,13 @@ internal static partial class Helper
 	{
 		if (tilePositionQuery == default)
 		{
-			tilePositionQuery = Core.EntityManager.CreateEntityQuery(new EntityQueryDesc
-			{
-				All = new ComponentType[] {
-					new(Il2CppType.Of<TilePosition>(), ComponentType.AccessMode.ReadOnly),
-					new(Il2CppType.Of<Translation>(), ComponentType.AccessMode.ReadOnly),
-					new(Il2CppType.Of<T>(), ComponentType.AccessMode.ReadOnly)
-				},
-				Options = EntityQueryOptions.IncludeDisabled | EntityQueryOptions.IncludeSpawnTag
-			});
+			var entityQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
+				.AddAll(new(Il2CppType.Of<TilePosition>(), ComponentType.AccessMode.ReadOnly))
+				.AddAll(new(Il2CppType.Of<Translation>(), ComponentType.AccessMode.ReadOnly))
+				.AddAll(new(Il2CppType.Of<T>(), ComponentType.AccessMode.ReadOnly))
+				.WithOptions(EntityQueryOptions.IncludeDisabled | EntityQueryOptions.IncludeSpawnTag);
+			tilePositionQuery = Core.EntityManager.CreateEntityQuery(ref entityQueryBuilder);
+			entityQueryBuilder.Dispose();
 		}
 
 		var closestEntity = Entity.Null;

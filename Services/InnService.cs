@@ -34,33 +34,33 @@ internal class InnService
 
     public InnService()
     {
-        EntityQueryDesc queryDesc = new()
-        {
-            All = new ComponentType[] { new(Il2CppType.Of<CastleHeart>(), ComponentType.AccessMode.ReadWrite) },
-            Options = EntityQueryOptions.IncludeDisabled
-        };
-        castleHeartQuery = Core.EntityManager.CreateEntityQuery(queryDesc);
+		var entityQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
+			.AddAll(new(Il2CppType.Of<CastleHeart>(), ComponentType.AccessMode.ReadWrite))
+			.WithOptions(EntityQueryOptions.IncludeDisabled);
+		castleHeartQuery = Core.EntityManager.CreateEntityQuery(ref entityQueryBuilder);
+		entityQueryBuilder.Dispose();
 
-		queryDesc = new EntityQueryDesc
-		{
-			All = new ComponentType[] { new(Il2CppType.Of<ClanTeam>()), new(Il2CppType.Of<UserOwner>()) },
-			Options = EntityQueryOptions.IncludeDisabled
-		};
-		innClanQuery = Core.EntityManager.CreateEntityQuery(queryDesc);
+		entityQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
+			.AddAll(new(Il2CppType.Of<ClanTeam>(), ComponentType.AccessMode.ReadWrite))
+			.AddAll(new(Il2CppType.Of<UserOwner>(), ComponentType.AccessMode.ReadWrite))
+			.WithOptions(EntityQueryOptions.IncludeDisabled);
+		innClanQuery = Core.EntityManager.CreateEntityQuery(ref entityQueryBuilder);
+		entityQueryBuilder.Dispose();
 
-		queryDesc = new EntityQueryDesc
-        {
-            All = new ComponentType[] { new(Il2CppType.Of<CastleRoom>()), new(Il2CppType.Of<CastleRoomFloorsBuffer>()) },
-            Options = EntityQueryOptions.IncludeDisabled
-        };
-        roomQuery = Core.EntityManager.CreateEntityQuery(queryDesc);
+		entityQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
+			.AddAll(new(Il2CppType.Of<CastleRoom>(), ComponentType.AccessMode.ReadWrite))
+			.AddAll(new(Il2CppType.Of<CastleRoomFloorsBuffer>(), ComponentType.AccessMode.ReadWrite))
+			.WithOptions(EntityQueryOptions.IncludeDisabled);
+		roomQuery = Core.EntityManager.CreateEntityQuery(ref entityQueryBuilder);
+		entityQueryBuilder.Dispose();
 
-		queryDesc = new EntityQueryDesc
-		{
-			All = new ComponentType[] { new(Il2CppType.Of<CastleRoom>()), new(Il2CppType.Of<CastleRoomFloorsBuffer>()), new(Il2CppType.Of<UserOwner>()) },
-			Options = EntityQueryOptions.IncludeDisabled
-		};
-		roomInnQuery = Core.EntityManager.CreateEntityQuery(queryDesc);
+		entityQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
+			.AddAll(new(Il2CppType.Of<CastleRoom>(), ComponentType.AccessMode.ReadWrite))
+			.AddAll(new(Il2CppType.Of<CastleRoomFloorsBuffer>(), ComponentType.AccessMode.ReadWrite))
+			.AddAll(new(Il2CppType.Of<UserOwner>(), ComponentType.AccessMode.ReadWrite))
+			.WithOptions(EntityQueryOptions.IncludeDisabled);
+		roomInnQuery = Core.EntityManager.CreateEntityQuery(ref entityQueryBuilder);
+		entityQueryBuilder.Dispose();
 
 		LoadRooms();
 
@@ -382,7 +382,10 @@ internal class InnService
 
 						// Check if they aren't in the inn clan
 						if (charEntity.Read<Team>().Value != teamValue)
-							ServerChatUtils.SendSystemMessageToClient(Core.EntityManager, user, "<color=green>Welcome to the Inn!</color> Use <color=yellow>.inn join</color> to join. Inn Info: <color=yellow>.inn info</color>. Complete shelter quests: <color=yellow>.inn quests</color>.");
+						{
+							var message = new FixedString512Bytes("<color=green>Welcome to the Inn!</color> Use <color=yellow>.inn join</color> to join. Inn Info: <color=yellow>.inn info</color>. Complete shelter quests: <color=yellow>.inn quests</color>.");
+							ServerChatUtils.SendSystemMessageToClient(Core.EntityManager, user, ref message);
+						}
 					}
                 }
                 else

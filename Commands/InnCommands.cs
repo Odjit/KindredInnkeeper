@@ -94,7 +94,7 @@ internal class InnCommands
 
 		userToAddEntity.Write(new ClanRole() { Value = ClanRoleEnum.Member });
 
-		TeamUtility.AddUserToClan(Core.EntityManager, clanEntity, userToAddEntity, ref user);
+		TeamUtility.AddUserToClan(Core.EntityManager, clanEntity, userToAddEntity, ref user, CastleHeartLimitType.User);
         userToAddEntity.Write(user);
 
         var members = Core.EntityManager.GetBuffer<ClanMemberStatus>(clanEntity);
@@ -412,7 +412,7 @@ internal class InnCommands
 		{
 			var tilePos = entity.Read<TilePosition>();
 			// Get rotation around Y axis
-			var euler = rot.ToEulerAngles();
+			var euler = new Quaternion(rot.value.x, rot.value.y, rot.value.z, rot.value.w).ToEulerAngles();
 			tilePos.TileRotation = (TileRotation)(Mathf.Floor((360 - math.degrees(euler.y) - 45) / 90) % 4);
 			entity.Write(tilePos);
 

@@ -13,26 +13,7 @@ namespace KindredInnkeeper.Services;
 
 internal class LocalizationService
 {
-    struct Code
-    {
-        public string Key { get; set; }
-        public string Value { get; set; }
-        public string Description { get; set; }
-    }
-
-    struct Node
-    {
-        public string Guid { get; set; }
-        public string Text { get; set; }
-    }
-
-    struct LocalizationFile
-    {
-        public Code[] Codes { get; set; }
-        public Node[] Nodes { get; set; }
-    }
-
-    Dictionary<string, string> localization = [];
+	Dictionary<string, string> localization = [];
     Dictionary<int, string> prefabNames = [];
 
     public LocalizationService()
@@ -51,8 +32,7 @@ internal class LocalizationService
         {
 			using var reader = new StreamReader(stream);
 			string jsonContent = reader.ReadToEnd();
-			var localizationFile = JsonSerializer.Deserialize<LocalizationFile>(jsonContent);
-			localization = localizationFile.Nodes.ToDictionary(x => x.Guid, x => x.Text);
+			localization = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonContent);
 		}
         else
         {

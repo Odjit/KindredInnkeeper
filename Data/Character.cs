@@ -7,7 +7,7 @@ internal static class Character
 {
 	public static void Populate()
 	{
-		foreach(var (prefabGuid, name) in Core.PrefabCollectionSystem.PrefabGuidToNameDictionary)
+		foreach(var (name, prefabGuid) in Core.PrefabCollectionSystem._SpawnableNameToPrefabGuidDictionary)
 		{
 			if (!name.StartsWith("CHAR")) continue;
 			Named[name] = prefabGuid;

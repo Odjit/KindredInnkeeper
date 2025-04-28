@@ -1,3 +1,4 @@
+using Il2CppInterop.Runtime;
 using KindredInnkeeper.Models;
 using ProjectM;
 using ProjectM.Network;
@@ -96,9 +97,11 @@ internal class PlayerService
 	}
 	public static IEnumerable<Entity> GetUsersOnline()
 	{
-
-		NativeArray<Entity> _userEntities = Core.EntityManager.CreateEntityQuery(ComponentType.ReadOnly<User>()).ToEntityArray(Allocator.Temp);
-		foreach(var entity in _userEntities)
+		var entityQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
+			.AddAll(new(Il2CppType.Of<User>(), ComponentType.AccessMode.ReadOnly));
+		NativeArray<Entity> _userEntities = Core.EntityManager.CreateEntityQuery(ref entityQueryBuilder).ToEntityArray(Allocator.Temp);
+		entityQueryBuilder.Dispose();
+		foreach (var entity in _userEntities)
 		{
 			if (Core.EntityManager.Exists(entity) && entity.Read<User>().IsConnected)
 				yield return entity;
