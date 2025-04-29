@@ -56,15 +56,15 @@ Once your layout is complete, use the `.inn addroom` command to add rooms to the
   - Lists the current guests in the inn.
 - `.inn setroomowner (player)`
   - Sets the owner of the room to the specified player.
-- `.inn roomowner`
+- `.inn roomowner` (alias: `.inn ro`)
   - Names the owner of the room you are in.
 - `.inn inforeload`
   - Reloads the inn info from the config file.
 - `.inn dismantleoff`
-  - stops the dismantling of all tiles on the plot you're on. (will cause lag for a moment)
+  - Stops the dismantling of all tiles on the plot you're on. (will cause lag for a moment)
 - `.inn moveoff`
-  - stops the moving of all tiles on the plot you're on. (will cause lag for a moment)
-- `.inn blockrelocate`
+  - Stops the moving of all tiles on the plot you're on. (will cause lag for a moment)
+- `.inn blockrelocate` (alias: `.inn br`)
   - Blocks the relocation of the castle heart of the plot you're on.
 - `.inn spawntable (table research tier: 1/2/3)`
   - Spawns a neutral research table at the mouse location.
@@ -74,6 +74,8 @@ Once your layout is complete, use the `.inn addroom` command to add rooms to the
   - Adds the user to the inn clan.
 - `.inn info`
   - Lists the rules of the inn.
+- `.inn help`
+  - Displays the commands available for the Inn.
 - `.inn quests`
   - Completes quests relating to a castle heart.
 - `.inn vacancy`
@@ -81,7 +83,9 @@ Once your layout is complete, use the `.inn addroom` command to add rooms to the
 - `.inn claimroom`
   - Claims a room in the inn.
 - `.inn leaveroom`
-  - Removes the user from the room
+  - Removes the user from the room.
+- `.inn findroom` (alias: `.inn fr`)
+  - Creates a spotlight to help you find your door.
 
  
 

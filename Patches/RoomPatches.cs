@@ -115,7 +115,7 @@ public static class PreventInventoryMovementsAll
 {
     public static void Prefix(MoveAllItemsBetweenInventoriesSystem __instance)
     {
-        var entities = __instance.__query_133601556_0.ToEntityArray(Allocator.Temp);
+        var entities = __instance.__query_133601579_0.ToEntityArray(Allocator.Temp);
         foreach (var entity in entities)
 		{
 			var fromUser = entity.Read<FromCharacter>().User;
@@ -169,7 +169,7 @@ public static class PreventSmartMerge
 {
     public static void Prefix(SmartMergeItemsBetweenInventoriesSystem __instance)
     {
-        var entities = __instance.__query_133601659_0.ToEntityArray(Allocator.Temp);
+        var entities = __instance.__query_133601682_0.ToEntityArray(Allocator.Temp);
         foreach (var entity in entities)
 		{
 			var fromUser = entity.Read<FromCharacter>().User;
@@ -196,7 +196,7 @@ public static class PreventSortAll
 {
     public static void Prefix(SortAllInventoriesSystem __instance)
     {
-        var entities = __instance.__query_133601775_0.ToEntityArray(Allocator.Temp);
+        var entities = __instance.__query_133601798_0.ToEntityArray(Allocator.Temp);
         foreach (var entity in entities)
         {
 			var fromUser = entity.Read<FromCharacter>().User;
@@ -221,7 +221,7 @@ public static class PreventSortSingle
 {
     public static void Prefix(SortSingleInventorySystem __instance)
     {
-        var entities = __instance.__query_133601732_0.ToEntityArray(Allocator.Temp);
+        var entities = __instance.__query_133601755_0.ToEntityArray(Allocator.Temp);
         foreach (var entity in entities)
 		{
 			var fromUser = entity.Read<FromCharacter>().User;
