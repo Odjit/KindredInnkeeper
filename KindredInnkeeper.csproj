@@ -3,12 +3,12 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>KindredInnkeeper</AssemblyName>
     <Description>Assign a territory/clan that is joinable by all and serves as a shared living space.</Description>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <RootNamespace>KindredInnkeeper</RootNamespace>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
-    <FileVersion>1.1.0.0</FileVersion>
+    <AssemblyVersion>1.1.1.0</AssemblyVersion>
+    <FileVersion>1.1.1.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Data\English.json" />

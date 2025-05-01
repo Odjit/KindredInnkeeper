@@ -4,6 +4,8 @@
 KindredInnkeeper creates an inn for V Rising, allowing new players to join and get started quickly even with no plots being available. It introduces a structured way to claim temporary housing within a clan-designated inn.
 
 Feel free to reach out to me on Discord (odjit) if you have any questions or need help with the mod.
+**Note:** Dependencies are not working while we are in a test period. Please refer to the **Installation** section for more information.
+
 
 ## Details
 
@@ -97,8 +99,10 @@ Once your layout is complete, use the `.inn addroom` command to add rooms to the
 <details> <summary>Steps</summary>
 
 1. Install BepInEx, which is required for modding VRising. Follow the instructions provided at [BepInEx Installation Guide](https://wiki.vrisingmods.com/user/bepinex_install.html) to set it up correctly in your VRising game directory.
+   - **Note:** Again, until dependencies are updated for 1.1, please do not use the thunderstore version. Get the correct testing version https://wiki.vrisingmods.com/user/game_update.html.
 
 2. Download the KindredInnkeeper mod along with its dependencies (VCF). Ensure you select the correct versions that are compatible with your game.
+   - **Note:** Again, until dependencies are updated for 1.1, please do not use the thunderstore version. Get the correct testing version https://wiki.vrisingmods.com/user/game_update.html.
 
 3. After downloading, locate the .dll files for KindredInnkeeper and its dependencies. Move or copy these .dll files into the `BepInEx\Plugins` directory within your VRising installation folder.
 
