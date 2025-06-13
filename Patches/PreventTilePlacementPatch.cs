@@ -113,7 +113,9 @@ static class PlaceTileModelSystemPatch
                     }
                 }
             }
-            else
+            else if (btme.PrefabGuid != Data.Prefabs.TM_EH_EMP_Placeable_T01 && btme.PrefabGuid != Data.Prefabs.TM_EH_Mines_ExplosiveBarrel &&
+				     btme.PrefabGuid != Data.Prefabs.TM_EH_Mines_ExplosiveBarrel_Placeable_T01 && btme.PrefabGuid != Data.Prefabs.TM_EH_Mines_ExplosiveBarrel_Placeable_T02 &&
+					 btme.PrefabGuid != Data.Prefabs.TM_Siege_Structure_T02 && btme.PrefabGuid != Data.Prefabs.TM_Duel_Flag)
             {
 				var message = new FixedString512Bytes("Can't build anything besides a castle heart while a member of the Inn.  Note building a castle heart will kick you.");
                 ServerChatUtils.SendSystemMessageToClient(Core.EntityManager, 
